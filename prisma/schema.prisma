@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // ADMIN, USER, COLLECTOR
+  image     String?
+  groupId   String?
+  group     Group?   @relation(fields: [groupId], references: [id])
+  bookings  Booking[] @relation("AssignedBookings")
+  createdBookings Booking[] @relation("CreatedBookings")
+  bookingRequests BookingRequest[]
+  auditLogs AuditLog[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Location Tracking
+  lastLat           Float?
+  lastLng           Float?
+  lastLocationUpdate DateTime?
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  patientName String
+  email       String?
+  phone       String
+  testType    String
+  date        DateTime
+  type        String   @default("LAB_VISIT") // LAB_VISIT, HOME_COLLECTION
+  status      String   @default("PENDING") // PENDING, ASSIGNED, COLLECTED, RECEIVED_AT_LAB, PROCESSING, COMPLETED, REJECTED
+  
+  assignedToId String?
+  assignedTo   User?    @relation("AssignedBookings", fields: [assignedToId], references: [id])
+  
+  address     String?
+  remarks     String?
+  
+  sampleId    String? 
+  reportUrl   String?
+
+  requests    BookingRequest[]
+
+  collectedAt DateTime?
+  receivedAt  DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  source      String   @default("WEBSITE") // WEBSITE, ADMIN
+  
+  createdById String?
+  createdBy   User?    @relation("CreatedBookings", fields: [createdById], references: [id])
+}
+
+model BookingRequest {
+  id          String   @id @default(cuid())
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  collectorId String
+  collector   User     @relation(fields: [collectorId], references: [id])
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([bookingId, collectorId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+}
+
+model VisitorLog {
+  id        String   @id @default(cuid())
+  ip        String?  // Store hashed IP ideally, or just IP for simple internal tool
+  userAgent String?
+  path      String?
+  visitDate DateTime @default(now())
+  
+  @@index([visitDate])
+}
+
+model Doctor {
+  id          String   @id @default(cuid())
+  name        String
+  specialty   String
+  education   String
+  experience  String
+  bio         String
+  image       String?
+  availability String?  @default("Sun-Fri / 10:00 AM - 4:00 PM")
+  specializationDetails String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LabTest {
+  id          String   @id @default(cuid())
+  name        String
+  price       Int
+  discountPrice Int?   // Optional discounted price
+  category    String   @default("General") // Pathology, Biochemistry, etc.
+  description String?
+  tat         String?  // Turn Around Time e.g. "24 Hours"
+  packages    Package[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Package {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  price         Int
+  originalPrice Int?      // For calculating discount
+  tests         LabTest[] // Many-to-Many
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

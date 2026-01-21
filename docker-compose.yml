@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # - DATABASE_URL=postgresql://postgres:ostech@host.docker.internal:5432/lab?schema=public
+      - AUTH_SECRET=${AUTH_SECRET}
+    restart: always

@@ -1,0 +1,107 @@
+Error: {
+  "name": "PrismaClientValidationError",
+  "clientVersion": "5.22.0"
+}
+Message: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].booking.create()` invocation in
+C:\Users\LENOVO\Downloads\lab\.next\dev\server\chunks\ssr\[root-of-the-server]__140bdd17._.js:190:150
+
+  187 // Debug Date
+  188 console.log("Creating Booking - Raw Date:", date, "Parsed:", new Date(date).toISOString());
+  189 try {
+→ 190     await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].booking.create({
+            data: {
+              patientName: "kapil",
+              email: "kapil@kapil.com",
+              phone: "9854203200",
+              testType: "Vitamin D",
+              date: new Date("2026-01-19T00:00:00.000Z"),
+              status: "PENDING",
+              type: "LAB_VISIT",
+              address: null,
+              remarks: "",
+              source: "PORTAL",
+              ~~~~~~
+              createdBy: {
+                connect: {
+                  email: "kapil@kapil.com"
+                }
+              },
+          ?   id?: String,
+          ?   sampleId?: String | Null,
+          ?   reportUrl?: String | Null,
+          ?   collectedAt?: DateTime | Null,
+          ?   receivedAt?: DateTime | Null,
+          ?   createdAt?: DateTime,
+          ?   updatedAt?: DateTime,
+          ?   assignedTo?: UserCreateNestedOneWithoutBookingsInput,
+          ?   requests?: BookingRequestCreateNestedManyWithoutBookingInput
+            }
+          })
+
+Unknown argument `source`. Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].booking.create()` invocation in
+C:\Users\LENOVO\Downloads\lab\.next\dev\server\chunks\ssr\[root-of-the-server]__140bdd17._.js:190:150
+
+  187 // Debug Date
+  188 console.log("Creating Booking - Raw Date:", date, "Parsed:", new Date(date).toISOString());
+  189 try {
+→ 190     await __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["prisma"].booking.create({
+            data: {
+              patientName: "kapil",
+              email: "kapil@kapil.com",
+              phone: "9854203200",
+              testType: "Vitamin D",
+              date: new Date("2026-01-19T00:00:00.000Z"),
+              status: "PENDING",
+              type: "LAB_VISIT",
+              address: null,
+              remarks: "",
+              source: "PORTAL",
+              ~~~~~~
+              createdBy: {
+                connect: {
+                  email: "kapil@kapil.com"
+                }
+              },
+          ?   id?: String,
+          ?   sampleId?: String | Null,
+          ?   reportUrl?: String | Null,
+          ?   collectedAt?: DateTime | Null,
+          ?   receivedAt?: DateTime | Null,
+          ?   createdAt?: DateTime,
+          ?   updatedAt?: DateTime,
+          ?   assignedTo?: UserCreateNestedOneWithoutBookingsInput,
+          ?   requests?: BookingRequestCreateNestedManyWithoutBookingInput
+            }
+          })
+
+Unknown argument `source`. Available options are marked with ?.
+    at wn (C:\Users\LENOVO\Downloads\lab\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\LENOVO\Downloads\lab\node_modules\@prisma\client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\LENOVO\Downloads\lab\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\LENOVO\Downloads\lab\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (C:\Users\LENOVO\Downloads\lab\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async createBooking (C:\Users\LENOVO\Downloads\lab\.next\dev\server\chunks\ssr\[root-of-the-server]__140bdd17._.js:190:9)
+    at async executeActionAndPrepareForRender (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23598)
+    at async renderToHTMLOrFlightImpl (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42106)
+    at async doRender (C:\Users\LENOVO\Downloads\lab\.next\dev\server\chunks\ssr\node_modules_next_dist_6a51f837._.js:2844:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\LENOVO\Downloads\lab\.next\dev\server\chunks\ssr\node_modules_next_dist_6a51f837._.js:3050:32)
+    at async Module.handler (C:\Users\LENOVO\Downloads\lab\.next\dev\server\chunks\ssr\node_modules_next_dist_6a51f837._.js:3421:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\base-server.js:1422:9)
+    at async DevServer.renderPageComponent (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\base-server.js:1474:24)
+    at async DevServer.renderToResponseImpl (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\base-server.js:1524:32)
+    at async DevServer.pipeImpl (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\base-server.js:1018:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\base-server.js:909:17)
+    at async C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\LENOVO\Downloads\lab\node_modules\next\dist\server\lib\start-server.js:226:13)

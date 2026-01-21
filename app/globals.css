@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-medical-teal-50: #e0f7fa;
+  --color-medical-teal-100: #b2ebf2;
+  --color-medical-teal-500: #009ca6;
+  /* Logo Teal */
+  --color-medical-teal-600: #008b94;
+  --color-medical-teal-700: #006d77;
+  --color-medical-teal-800: #004f56;
+  --color-medical-teal-900: #00363b;
+  --color-medical-teal-950: #001f22;
+
+  --color-medical-orange-500: #ef8e1e;
+  /* Logo Orange */
+  --color-medical-orange-600: #d67c15;
+
+  --color-medical-gray: #f8f9fa;
+
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+  --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+}
+
+
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: white;
+}
