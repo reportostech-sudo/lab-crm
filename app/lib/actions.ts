@@ -28,16 +28,24 @@ export async function authenticate(
             return "Invalid credentials.";
         }
 
-        // Fetch user role to determine redirect
+        // Fetch user role and permissions to determine redirect
         const user = await prisma.user.findUnique({
             where: { email },
-            select: { role: true }
+            select: { role: true, permissions: true }
         });
 
         if (user) {
-            if (user.role === 'ADMIN') redirectUrl = '/admin';
-            else if (user.role === 'COLLECTOR') redirectUrl = '/collector';
-            else redirectUrl = '/'; // Default user dashboard or home
+            const userWithPerms = user as any;
+
+            if (user.role === 'ADMIN') {
+                redirectUrl = '/admin';
+            } else if (user.role === 'COLLECTOR') {
+                redirectUrl = '/collector';
+            } else if (userWithPerms.permissions && userWithPerms.permissions.length > 0) {
+                redirectUrl = '/admin';
+            } else {
+                redirectUrl = '/'; // Default user dashboard or home
+            }
         }
 
     } catch (error) {

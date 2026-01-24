@@ -14,6 +14,7 @@ const UserSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
     role: z.enum(['USER', 'ADMIN', 'COLLECTOR']),
     groupId: z.string().optional(),
+    permissions: z.array(z.string()).optional(),
 });
 
 export async function createUser(prevState: any, formData: FormData) {
@@ -29,6 +30,7 @@ export async function createUser(prevState: any, formData: FormData) {
             password: formData.get('password'),
             role: formData.get('role'),
             groupId: formData.get('groupId') || undefined,
+            permissions: formData.getAll('permissions') as string[],
         });
 
         if (!validatedFields.success) {
@@ -38,7 +40,7 @@ export async function createUser(prevState: any, formData: FormData) {
             };
         }
 
-        const { name, email, password, role, groupId } = validatedFields.data;
+        const { name, email, password, role, groupId, permissions } = validatedFields.data;
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
@@ -54,6 +56,7 @@ export async function createUser(prevState: any, formData: FormData) {
                 password: hashedPassword,
                 role,
                 groupId: groupId || null,
+                permissions: permissions || [],
             },
         });
 
@@ -148,6 +151,7 @@ export async function updateUser(prevState: any, formData: FormData) {
         const role = formData.get('role') as string;
         const groupId = formData.get('groupId') as string;
         const password = formData.get('password') as string;
+        const permissions = formData.getAll('permissions') as string[];
 
         if (!id || !name || !email || !role) {
             return { message: 'Missing required fields.' };
@@ -170,11 +174,13 @@ export async function updateUser(prevState: any, formData: FormData) {
             email,
             role,
             groupId: groupId || null,
+            permissions: permissions || [],
         };
 
         if (password && password.length >= 6) {
             const hashedPassword = await bcrypt.hash(password, 10);
             updateData.password = hashedPassword;
+            updateData.mustChangePassword = true; // Force password change if Admin resets it
         }
 
         await prisma.user.update({
@@ -187,5 +193,41 @@ export async function updateUser(prevState: any, formData: FormData) {
     } catch (error) {
         console.error('Failed to update user:', error);
         return { message: 'Database Error: Failed to update user.' };
+    }
+}
+
+export async function changePassword(prevState: any, formData: FormData) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return { message: 'Unauthorized' };
+        }
+
+        const password = formData.get('password') as string;
+        const confirmPassword = formData.get('confirmPassword') as string;
+
+        if (!password || password.length < 6) {
+            return { message: 'Password must be at least 6 characters.' };
+        }
+
+        if (password !== confirmPassword) {
+            return { message: 'Passwords do not match.' };
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+                password: hashedPassword,
+                mustChangePassword: false, // Reset the flag
+            },
+        });
+
+        // We don't revalidate path here because we want to redirect in the UI component or middleware
+        return { message: 'Success! Password changed.', success: true };
+    } catch (error) {
+        console.error('Failed to change password:', error);
+        return { message: 'Failed to change password.' };
     }
 }

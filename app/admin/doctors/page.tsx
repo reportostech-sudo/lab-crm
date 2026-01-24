@@ -15,7 +15,7 @@ export default async function AdminDoctorsPage(props: { searchParams: Promise<{ 
         <div className="space-y-6">
             <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Doctors Management</h1>
+
                     <p className="text-gray-500 text-sm mt-1">Manage doctor profiles and details shown on the website</p>
                 </div>
                 <div className="flex items-center gap-4">

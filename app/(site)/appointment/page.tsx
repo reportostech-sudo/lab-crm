@@ -6,7 +6,11 @@ export const metadata: Metadata = {
     description: 'Schedule your medical tests at Sukra House of Diagnostic. Easy online booking for fast and reliable service.',
 };
 
-export default function AppointmentPage() {
+import { fetchTestOptions } from '@/app/lib/test-actions';
+
+export default async function AppointmentPage() {
+    const tests = await fetchTestOptions();
+
     return (
         <div className="bg-medical-gray min-h-screen py-16">
             <div className="container mx-auto px-4">
@@ -20,7 +24,7 @@ export default function AppointmentPage() {
 
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="md:col-span-2">
-                            <AppointmentForm />
+                            <AppointmentForm tests={tests} />
                         </div>
 
                         <div className="space-y-6">
@@ -40,7 +44,7 @@ export default function AppointmentPage() {
                                     Call us directly for urgent bookings or home collection inquiries.
                                 </p>
                                 <div className="text-xl font-bold text-medical-blue-600">
-                                    +977-1-4422222
+                                    01-5916870/71
                                 </div>
                             </div>
                         </div>

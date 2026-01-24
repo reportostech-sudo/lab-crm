@@ -1,4 +1,5 @@
 import { getPaginatedBookings, fetchCollectors } from "@/app/lib/booking-actions";
+export const dynamic = 'force-dynamic';
 import BookingRow from "@/components/admin/BookingRow";
 import AddBookingModal from "@/components/admin/AddBookingModal";
 import AutoRefresh from "@/components/AutoRefresh";
@@ -28,7 +29,7 @@ export default async function BookingsPage({ searchParams }: PageProps) {
         <div className="space-y-6">
             <AutoRefresh intervalMs={5000} />
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800">Booking Management</h1>
+
                 <AddBookingModal />
             </div>
 
@@ -48,7 +49,7 @@ export default async function BookingsPage({ searchParams }: PageProps) {
                                 <th className="px-6 py-4 font-medium">Sample ID</th>
                                 <th className="px-6 py-4 font-medium">Source</th>
                                 <th className="px-6 py-4 font-medium text-center">Report</th>
-                                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                <th className="px-6 py-4 font-medium text-right sticky right-0 bg-gray-50 z-10 shadow-[rgba(0,0,0,0.05)_0px_0px_10px_-5px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">

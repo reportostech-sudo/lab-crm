@@ -77,6 +77,9 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                 )}
 
                 <div className="text-[10px] text-gray-400 mt-2 space-y-1 font-mono">
+                    {booking.assignedAt && (
+                        <div className="text-blue-600 font-medium">Assigned: {new Date(booking.assignedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                    )}
                     {booking.requests && booking.requests.length > 0 && booking.requests[0]?.createdAt && (
                         <div>Req: {new Date(booking.requests[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     )}
@@ -139,11 +142,18 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                 )}
             </td>
             <td className="px-6 py-4">
-                <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded border ${booking.source === 'WEBSITE' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                <div className="flex flex-col items-start gap-1">
+                    <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded border ${booking.source === 'WEBSITE' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                         'bg-purple-50 text-purple-600 border-purple-100'
-                    }`}>
-                    {booking.source === 'ADMIN' ? 'PORTAL' : (booking.source || 'WEBSITE')}
-                </span>
+                        }`}>
+                        {booking.source === 'ADMIN' ? 'PORTAL' : (booking.source || 'WEBSITE')}
+                    </span>
+                    {booking.createdBy && (
+                        <span className="text-[10px] text-gray-500 font-medium px-1">
+                            by {booking.createdBy.name?.split(' ')[0] || 'Admin'}
+                        </span>
+                    )}
+                </div>
             </td>
             <td className="px-6 py-4 text-center">
                 {/* Report Status */}
@@ -155,12 +165,12 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                     <span className="text-gray-400 text-xs italic">Pending</span>
                 )}
             </td>
-            <td className="px-6 py-4 text-right">
+            <td className="px-6 py-4 text-right sticky right-0 bg-white z-10 shadow-[rgba(0,0,0,0.05)_0px_0px_10px_-5px]">
                 <div className="flex justify-end items-center gap-2">
                     {isLoading && <Loader2 className="animate-spin text-gray-400" size={16} />}
 
                     {/* Status Actions */}
-                    {booking.status === 'PENDING' && booking.type === 'HOME_COLLECTION' && (
+                    {(booking.status === 'PENDING' || booking.status === 'ASSIGNED') && booking.type === 'HOME_COLLECTION' && (
                         <div className="flex flex-col gap-2 items-end">
                             {booking.requests && booking.requests.length > 0 && booking.requests.map((req: any) => (
                                 <div key={req.id} className="flex items-center gap-2 bg-yellow-50 px-2 py-1 rounded border border-yellow-100 animate-pulse">
@@ -182,7 +192,7 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                             <select
                                 onChange={(e) => handleAssign(e.target.value)}
                                 className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg p-1.5 focus:ring-medical-teal-500 focus:border-medical-teal-500"
-                                defaultValue=""
+                                value={booking.assignedToId || ""}
                             >
                                 <option value="" disabled>Manual Assign</option>
                                 {collectors.map(c => (
@@ -193,23 +203,23 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                     )}
 
                     {booking.status === 'PENDING' && booking.type !== 'HOME_COLLECTION' && (
-                        <button onClick={() => handleStatusUpdate('CONFIRMED')} className="text-medical-teal-600 hover:text-medical-teal-800 text-sm font-bold">Confirm</button>
+                        <button onClick={() => handleStatusUpdate('COLLECTED')} className="text-indigo-600 hover:text-indigo-800 text-sm font-bold whitespace-nowrap">Mark Sample Collected</button>
                     )}
 
                     {booking.status === 'ASSIGNED' && (
-                        <button onClick={() => handleStatusUpdate('COLLECTED')} className="text-indigo-600 hover:text-indigo-800 text-sm font-bold">Mark Collected</button>
+                        <button onClick={() => handleStatusUpdate('COLLECTED')} className="text-indigo-600 hover:text-indigo-800 text-sm font-bold whitespace-nowrap">Mark Collected</button>
                     )}
 
                     {booking.status === 'COLLECTED' && (
-                        <button onClick={() => handleStatusUpdate('RECEIVED_AT_LAB')} className="text-purple-600 hover:text-purple-800 text-sm font-bold">Receive @ Lab</button>
+                        <button onClick={() => handleStatusUpdate('RECEIVED_AT_LAB')} className="text-purple-600 hover:text-purple-800 text-sm font-bold whitespace-nowrap">Receive @ Lab</button>
                     )}
 
                     {booking.status === 'RECEIVED_AT_LAB' && (
-                        <button onClick={() => handleStatusUpdate('PROCESSING')} className="text-yellow-600 hover:text-yellow-800 text-sm font-bold">Start Process</button>
+                        <button onClick={() => handleStatusUpdate('PROCESSING')} className="text-yellow-600 hover:text-yellow-800 text-sm font-bold whitespace-nowrap">Start Process</button>
                     )}
 
                     {booking.status === 'PROCESSING' && (
-                        <button onClick={() => handleStatusUpdate('COMPLETED')} className="text-green-600 hover:text-green-800 text-sm font-bold">Publish Result</button>
+                        <button onClick={() => handleStatusUpdate('COMPLETED')} className="text-green-600 hover:text-green-800 text-sm font-bold whitespace-nowrap">Publish Result</button>
                     )}
                 </div>
 

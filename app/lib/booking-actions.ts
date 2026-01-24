@@ -1,9 +1,10 @@
 'use server';
 
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { auth } from '@/auth';
 import { prisma } from '@/app/lib/prisma';
+import { logActivity } from '@/app/lib/log-actions';
 
 const BookingSchema = z.object({
     name: z.string().min(1, 'Name is required'),
@@ -32,18 +33,20 @@ export async function createBooking(prevState: any, formData: FormData) {
 
     if (!validatedFields.success) {
         console.log("Validation Errors:", validatedFields.error.flatten().fieldErrors);
-        console.log("Received Data:", {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            testType: formData.get('testType'),
-            type: formData.get('type'),
-            // date: formData.get('date'), // Exclude date to shorten log if needed
-        });
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             message: 'Missing Fields. Failed to Create Booking.',
         };
+    }
+
+    const session = await auth();
+    // Public Booking (No session) allowed. 
+    // If Authenticated, check permissions.
+    if (session?.user?.role !== 'ADMIN' && session?.user) {
+        const { hasPermission, PERMISSIONS } = await import('@/app/lib/permissions');
+        if (!hasPermission((session.user as any).permissions, PERMISSIONS.bookings.write)) {
+            return { message: 'Unauthorized: Missing write permission for bookings' };
+        }
     }
 
     const { name, email, phone, testType, date, type, address, remarks } = validatedFields.data;
@@ -56,8 +59,36 @@ export async function createBooking(prevState: any, formData: FormData) {
         };
     }
 
-    // Debug Date
-    console.log("Creating Booking - Raw Date:", date, "Parsed:", new Date(date).toISOString());
+    // Debug Date and Data
+    console.log("Creating Booking - Payload:", {
+        patientName: name,
+        email,
+        phone,
+        testType,
+        date: new Date(date),
+        type,
+        authSource: (await auth())?.user ? 'Authenticated' : 'Public',
+        finalSource: (await auth())?.user && validatedFields.data.source === 'PORTAL' ? 'PORTAL' : 'WEBSITE'
+    });
+
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+        return { message: 'Invalid Date Format' };
+    }
+
+    // Handle User Connection safely
+    let connectUser = undefined;
+    // session is already declared above
+    if (session?.user?.email) {
+        // Verify user exists to avoid "Record to connect not found" error
+        const userExists = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true }
+        });
+        if (userExists) {
+            connectUser = { connect: { email: session.user.email } };
+        }
+    }
 
     try {
         await prisma.booking.create({
@@ -66,23 +97,61 @@ export async function createBooking(prevState: any, formData: FormData) {
                 email,
                 phone,
                 testType,
-                date: new Date(date),
+                date: parsedDate,
                 status: 'PENDING',
                 type: type,
                 address: type === 'HOME_COLLECTION' ? address : null,
                 remarks,
-                source: (await auth())?.user && validatedFields.data.source === 'PORTAL' ? 'PORTAL' : 'WEBSITE',
-                createdBy: (await auth())?.user?.email
-                    ? { connect: { email: (await auth())?.user?.email! } }
-                    : undefined,
+                source: session?.user && validatedFields.data.source === 'PORTAL' ? 'PORTAL' : 'WEBSITE',
+                createdBy: connectUser,
             },
         });
-    } catch (error: any) {
-        console.error('Create Booking Error:', error);
 
+        // Create Audit Log if user is authenticated
+        // Create Audit Log if user is authenticated
+        if (session?.user?.id) {
+            await logActivity(
+                'CREATE_BOOKING',
+                session.user.role === 'ADMIN'
+                    ? `New booking by ${session.user.name} was created`
+                    : `New booking created for ${name}`,
+                session.user.id
+            );
+        } else {
+            // Log for public website booking (optional, system log)
+            /* 
+            await prisma.auditLog.create({
+               data: {
+                   userId: 'SYSTEM', // Needs handling if userId is required FK
+                   action: 'CREATE_BOOKING',
+                   details: `New website booking for ${name}`,
+               }
+           });
+           */
+        }
+    } catch (error: any) {
+        console.error('Create Booking Error Detailed:', JSON.stringify(error, null, 2));
         return {
             message: 'Database Error: Failed to Create Booking.',
         };
+    }
+
+    // Trigger Notification
+    try {
+        // Allow notifications for ALL sources for now (including Admin testing)
+        const isWebsite = true; // !session?.user?.role || session.user.role !== 'ADMIN';
+        console.log(`[CreateBooking] Notification Trigger Check: UserRole=${session?.user?.role}, isWebsite=${isWebsite} (Forced True)`);
+        if (isWebsite) {
+            // Dynamic import to avoid circular dependency if any (though these are server actions)
+            const { createNotification } = await import('@/app/lib/notification-actions');
+            await createNotification(
+                'New Booking Request',
+                `New booking from ${name} for ${testType}`,
+                '/admin/bookings'
+            );
+        }
+    } catch (err) {
+        console.error('Notification trigger failed', err);
     }
 
     revalidatePath('/admin/bookings');
@@ -262,6 +331,7 @@ export async function getCollectorDetailStats() {
 export async function getBookingListByType(type: string) {
     try {
         if (type === 'FIELD_OFFICERS') {
+            noStore();
             return await getCollectorDetailStats();
         }
 
@@ -349,6 +419,8 @@ export async function getPaginatedBookings(
 ) {
     const skip = (page - 1) * limit;
 
+    noStore();
+
     let whereClause: any = {};
 
     if (search) {
@@ -429,6 +501,7 @@ export async function assignBooking(formData: FormData) {
             data: {
                 assignedToId: collectorId,
                 status: 'ASSIGNED',
+                assignedAt: new Date(),
             },
         });
         revalidatePath('/admin/bookings');
@@ -456,6 +529,28 @@ export async function updateBookingStatus(formData: FormData) {
             where: { id: bookingId },
             data,
         });
+
+        // Audit Logging for Status Update
+        const session = await auth();
+        if (session?.user?.id) {
+            // Fetch booking for details
+            const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+            if (booking && status === 'COLLECTED') {
+                const location = booking.address ? ` at ${booking.address}` : '';
+                await logActivity(
+                    'COLLECTION',
+                    `${session.user.name || 'Collector'} collected sample from ${booking.patientName}${location}`,
+                    session.user.id
+                );
+            } else if (booking && status === 'RECEIVED_AT_LAB') {
+                await logActivity(
+                    'LAB_RECEIVE',
+                    `Sample for ${booking.patientName} received at lab`,
+                    session.user.id
+                );
+            }
+        }
+
         revalidatePath('/admin/bookings');
         revalidatePath('/collector');
         revalidatePath('/admin');
@@ -464,6 +559,8 @@ export async function updateBookingStatus(formData: FormData) {
         return { message: 'Database Error: Failed to update status.' };
     }
 }
+
+
 
 
 export async function getCollectorBookings() {
@@ -622,6 +719,7 @@ export async function approveAssignment(requestId: string, bookingId: string, co
             data: {
                 assignedToId: collectorId,
                 status: 'ASSIGNED',
+                assignedAt: new Date(),
             },
         });
 
@@ -640,6 +738,21 @@ export async function approveAssignment(requestId: string, bookingId: string, co
             },
             data: { status: 'REJECTED' },
         });
+
+        // Audit Log for Assignment
+        const session = await auth();
+        if (session?.user?.id) {
+            const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+            const collector = await prisma.user.findUnique({ where: { id: collectorId } });
+
+            if (booking && collector) {
+                await logActivity(
+                    'ASSIGNMENT',
+                    `Booking of ${booking.patientName} was assigned to ${collector.name || 'Collector'}`,
+                    session.user.id
+                );
+            }
+        }
 
         revalidatePath('/admin/bookings');
         revalidatePath('/admin');

@@ -3,6 +3,7 @@
 import { prisma } from './prisma';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
+import { logActivity } from './log-actions';
 
 export async function getTests(query?: string) {
     try {
@@ -20,6 +21,19 @@ export async function getTests(query?: string) {
         return tests;
     } catch (error) {
         console.error('Failed to fetch tests:', error);
+        return [];
+    }
+}
+
+export async function fetchTestOptions() {
+    try {
+        const tests = await prisma.labTest.findMany({
+            select: { id: true, name: true, price: true, category: true },
+            orderBy: { name: 'asc' }
+        });
+        return tests;
+    } catch (error) {
+        console.error('Failed to fetch test options:', error);
         return [];
     }
 }
@@ -50,6 +64,10 @@ export async function createTest(formData: FormData) {
                 tat
             }
         });
+
+        if (session.user.id) {
+            await logActivity('CREATE_TEST', `Created new test: ${name}`, session.user.id);
+        }
 
         revalidatePath('/admin/tests');
         revalidatePath('/services');
@@ -85,6 +103,10 @@ export async function updateTest(formData: FormData) {
             }
         });
 
+        if (session.user.id) {
+            await logActivity('UPDATE_TEST', `Updated test: ${name}`, session.user.id);
+        }
+
         revalidatePath('/admin/tests');
         revalidatePath('/services');
         return { message: 'Test updated successfully' };
@@ -102,6 +124,10 @@ export async function deleteTest(id: string) {
         await prisma.labTest.delete({
             where: { id }
         });
+
+        if (session.user.id) {
+            await logActivity('DELETE_TEST', `Deleted test ID: ${id}`, session.user.id);
+        }
 
         revalidatePath('/admin/tests');
         revalidatePath('/services');

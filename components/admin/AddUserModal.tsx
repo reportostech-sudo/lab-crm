@@ -5,6 +5,8 @@ import { createUser } from '../../app/lib/create-user';
 import { Plus, X, Loader2, CheckCircle } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 
+import PermissionSelector from './PermissionSelector';
+
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
@@ -20,6 +22,7 @@ function SubmitButton() {
 
 export default function AddUserModal({ groups }: { groups: any[] }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [state, dispatch] = useActionState(createUser, null);
 
     // Close modal on success (optional: you could just show a success message)
@@ -39,8 +42,8 @@ export default function AddUserModal({ groups }: { groups: any[] }) {
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-start z-50 p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 my-8">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gray-50/50">
                             <h3 className="text-xl font-bold text-gray-800">Add New User</h3>
                             <button
@@ -131,6 +134,11 @@ export default function AddUserModal({ groups }: { groups: any[] }) {
                                             </select>
                                         </div>
                                     </div>
+
+                                    <PermissionSelector selectedPermissions={selectedPermissions} onChange={setSelectedPermissions} />
+                                    {selectedPermissions.map(p => (
+                                        <input key={p} type="hidden" name="permissions" value={p} />
+                                    ))}
 
                                     {state?.message && state.message !== 'Success! User created.' && (
                                         <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">

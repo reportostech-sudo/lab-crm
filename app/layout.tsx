@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import { headers } from 'next/headers'
 import { prisma } from '@/app/lib/prisma'
 import { auth } from '@/auth'
+import { Providers } from '@/components/Providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -48,7 +49,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }

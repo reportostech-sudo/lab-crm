@@ -12,10 +12,7 @@ export default async function PermissionsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                        <Shield className="w-6 h-6 text-medical-teal-600" />
-                        User Permissions
-                    </h1>
+
                     <p className="text-gray-500 mt-1">Manage user roles and access levels.</p>
                 </div>
             </div>

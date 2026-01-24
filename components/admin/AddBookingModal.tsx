@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { createBooking } from '@/app/lib/booking-actions';
+import { fetchTestOptions } from '@/app/lib/test-actions';
 import { Plus, X, Loader2, Calendar, User, Phone, Mail, FileText, Home, Building2, MapPin } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 
@@ -22,6 +23,13 @@ export default function AddBookingModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [bookingType, setBookingType] = useState('LAB_VISIT');
     const [state, dispatch] = useActionState(createBooking, null as any);
+    const [tests, setTests] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (isOpen && tests.length === 0) {
+            fetchTestOptions().then(data => setTests(data));
+        }
+    }, [isOpen]);
 
     // Reset form state when closing
     const handleClose = () => {
@@ -118,13 +126,29 @@ export default function AddBookingModal() {
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Test Type</label>
                                             <div className="relative">
                                                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                                                <input
-                                                    type="text"
+                                                <select
                                                     name="testType"
                                                     required
-                                                    placeholder="e.g. Whole Body Checkup, Blood Sugar..."
-                                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-medical-teal-500 outline-none transition-all"
-                                                />
+                                                    defaultValue=""
+                                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-medical-teal-500 outline-none transition-all appearance-none bg-white"
+                                                >
+                                                    <option value="" disabled>Select a Service</option>
+                                                    {tests.length > 0 ? (
+                                                        tests.map((test: any) => (
+                                                            <option key={test.id} value={test.name}>
+                                                                {test.name} {test.price ? `(Rs. ${test.price})` : ''}
+                                                            </option>
+                                                        ))
+                                                    ) : (
+                                                        // Fallback options if fetch fails
+                                                        <>
+                                                            <option value="Blood Test">Blood Test</option>
+                                                            <option value="Pathology">Pathology</option>
+                                                            <option value="Whole Body Checkup">Whole Body Checkup</option>
+                                                            <option value="Other">Other</option>
+                                                        </>
+                                                    )}
+                                                </select>
                                             </div>
                                             {state?.errors?.testType && <p className="text-red-500 text-xs mt-1">{state.errors.testType}</p>}
                                         </div>

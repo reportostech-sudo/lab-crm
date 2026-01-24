@@ -16,6 +16,8 @@ model User {
   email     String   @unique
   password  String
   role      String   @default("USER") // ADMIN, USER, COLLECTOR
+  permissions String[] @default([]) // List of allowed modules e.g. ["bookings", "doctors"]
+  mustChangePassword Boolean @default(false)
   image     String?
   groupId   String?
   group     Group?   @relation(fields: [groupId], references: [id])
@@ -70,6 +72,7 @@ model Booking {
   
   createdById String?
   createdBy   User?    @relation("CreatedBookings", fields: [createdById], references: [id])
+  assignedAt  DateTime? // Time when the booking was assigned to a collector
 }
 
 model BookingRequest {
@@ -91,7 +94,11 @@ model AuditLog {
   details   String?
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  timestamp DateTime @default(now())
+  ipAddress String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+
+  @@index([createdAt])
 }
 
 model VisitorLog {
@@ -123,12 +130,23 @@ model LabTest {
   name        String
   price       Int
   discountPrice Int?   // Optional discounted price
-  category    String   @default("General") // Pathology, Biochemistry, etc.
+  category    String   @default("General") // Deprecated: Use categoryRel
+  categoryId  String?
+  categoryRel Category? @relation(fields: [categoryId], references: [id])
   description String?
   tat         String?  // Turn Around Time e.g. "24 Hours"
   packages    Package[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  tests       LabTest[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Package {
@@ -140,4 +158,22 @@ model Package {
   tests         LabTest[] // Many-to-Many
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model SystemSetting {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  link      String?  // e.g., /admin/bookings
+  isRead    Boolean  @default(false)
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  createdAt DateTime @default(now())
 }

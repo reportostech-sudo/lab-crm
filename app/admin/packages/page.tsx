@@ -9,7 +9,7 @@ export default async function AdminPackagesPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Health Packages</h1>
+
                     <p className="text-gray-500 text-sm mt-1">Create and manage health checkup bundles</p>
                 </div>
                 <div className="flex items-center gap-4">

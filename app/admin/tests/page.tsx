@@ -1,7 +1,8 @@
 import { getTests } from '@/app/lib/test-actions';
 import TestFormToggle from '@/components/admin/TestFormToggle';
-import DoctorSearch from '@/components/admin/DoctorSearch'; // Reuse Search Component
+import DoctorSearch from '@/components/admin/DoctorSearch';
 import { FileText, Tag, IndianRupee } from 'lucide-react';
+import ImportTestsButton from '@/components/admin/ImportTestsButton';
 
 export default async function AdminTestsPage(props: { searchParams: Promise<{ query?: string }> }) {
     const searchParams = await props.searchParams;
@@ -12,7 +13,7 @@ export default async function AdminTestsPage(props: { searchParams: Promise<{ qu
         <div className="space-y-6">
             <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Test Menu Management</h1>
+
                     <p className="text-gray-500 text-sm mt-1">Manage lab tests, prices, and categories</p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -21,6 +22,7 @@ export default async function AdminTestsPage(props: { searchParams: Promise<{ qu
                         <span className="text-sm font-bold text-medical-teal-700">Total: {tests.length}</span>
                     </div>
                     {/* Add Test Button */}
+                    <ImportTestsButton />
                     <TestFormToggle />
                 </div>
             </div>

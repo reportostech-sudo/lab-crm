@@ -15,7 +15,7 @@ async function getUser(email: string) {
     }
 }
 
-export const { auth, signIn, signOut } = NextAuth({
+export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({
@@ -31,7 +31,22 @@ export const { auth, signIn, signOut } = NextAuth({
                     if (!user) return null;
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return user;
+                    if (passwordsMatch) {
+                        // Log the login activity
+                        try {
+                            await prisma.auditLog.create({
+                                data: {
+                                    action: 'LOGIN',
+                                    details: `User ${user.name || user.email} logged in`,
+                                    userId: user.id,
+                                },
+                            });
+                        } catch (e) {
+                            console.error('Failed to log login activity:', e);
+                        }
+
+                        return user;
+                    }
                 }
 
                 console.log('Invalid credentials');

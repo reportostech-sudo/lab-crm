@@ -6,6 +6,7 @@ import AvailableBookings from "@/components/collector/AvailableBookings";
 import CollectorBookingsList from "@/components/collector/CollectorBookingsList";
 import CollectorStats from "@/components/collector/CollectorStats";
 import { logout } from "@/app/lib/actions";
+import AutoRefresh from "@/components/admin/AutoRefresh";
 
 export const metadata = {
     title: "Collector Dashboard | Sukra House of Diagnostic",
@@ -13,7 +14,11 @@ export const metadata = {
 
 export default async function CollectorDashboard() {
     const session = await auth();
-    if (!session?.user || (session.user as any).role !== 'COLLECTOR') {
+    const userRole = (session?.user as any)?.role;
+    const userPermissions = (session?.user as any)?.permissions || [];
+
+    // Allow if role is COLLECTOR OR if user has collector read permission
+    if (!session?.user || (userRole !== 'COLLECTOR' && !userPermissions.includes('collector:read'))) {
         redirect('/login');
     }
 
@@ -29,6 +34,7 @@ export default async function CollectorDashboard() {
                     <p className="text-sm text-gray-500">Welcome, {session.user.name}</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <AutoRefresh />
                     <form action={logout}>
                         <button type="submit" className="flex items-center gap-2 text-sm font-medium text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
                             <LogOut size={16} /> Sign Out

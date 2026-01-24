@@ -54,15 +54,15 @@ export default function Navbar() {
             const day = now.getDay(); // 0 is Sunday
             const hour = now.getHours();
 
-            // Sunday (0) to Friday (5): 8:00 - 19:00
-            // Saturday (6): 8:00 - 15:00
+            // Sunday (0) to Friday (5): 7:00 - 20:00
+            // Saturday (6): 7:00 - 15:00
 
             let isOpen = false;
 
             if (day === 6) { // Saturday
-                isOpen = hour >= 8 && hour < 15;
+                isOpen = hour >= 7 && hour < 15;
             } else { // Sun - Fri
-                isOpen = hour >= 8 && hour < 19;
+                isOpen = hour >= 7 && hour < 20;
             }
 
             if (isOpen) {
@@ -91,7 +91,7 @@ export default function Navbar() {
                             <Phone size={14} /> <span className="font-medium">01-5916870/71</span>
                         </span>
                         <span className="flex items-center gap-1.5 hidden md:flex opacity-90 hover:opacity-100 transition-opacity cursor-pointer border-l border-white/20 pl-6">
-                            <Clock size={14} /> <span className="font-medium">Sun-Fri: 8-19, Sat: 8-15</span>
+                            <Clock size={14} /> <span className="font-medium">Sun-Fri: 7-20, Sat: 7-15</span>
                         </span>
 
                         {/* Status Indicator */}

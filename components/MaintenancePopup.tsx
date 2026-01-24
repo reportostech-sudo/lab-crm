@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle, X, Wrench } from "lucide-react";
 
-export default function MaintenancePopup() {
+export default function MaintenancePopup({ maintenanceMode = false }: { maintenanceMode?: boolean }) {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
+        if (maintenanceMode) {
+            setIsVisible(true);
+            return;
+        }
+
         // Check if the popup has already been shown in this session
         const hasSeenPopup = sessionStorage.getItem("hasSeenMaintenancePopup");
         if (!hasSeenPopup) {
@@ -16,7 +21,7 @@ export default function MaintenancePopup() {
             }, 1000);
             return () => clearTimeout(timer);
         }
-    }, []);
+    }, [maintenanceMode]);
 
     const handleClose = () => {
         setIsVisible(false);
@@ -24,6 +29,38 @@ export default function MaintenancePopup() {
     };
 
     if (!isVisible) return null;
+
+    if (maintenanceMode) {
+        return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-md animate-in fade-in duration-300">
+                <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300 border border-gray-200">
+                    <div className="bg-orange-500 p-4 flex justify-center items-center">
+                        <div className="flex items-center gap-2 text-white font-bold text-lg">
+                            <Wrench className="fill-white/20 text-white" size={24} />
+                            <span>System Maintenance</span>
+                        </div>
+                    </div>
+
+                    <div className="p-8 text-center">
+                        <div className="bg-orange-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <AlertTriangle className="text-orange-500" size={40} />
+                        </div>
+
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">We'll be back shortly!</h3>
+
+                        <p className="text-gray-600 mb-6 leading-relaxed">
+                            Our system is currently undergoing scheduled maintenance to improve your experience.
+                            Please check back in a few minutes.
+                        </p>
+
+                        <div className="text-xs text-gray-400">
+                            Error Code: 503 Service Unavailable
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
