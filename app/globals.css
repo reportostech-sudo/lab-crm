@@ -32,4 +32,26 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: white;
+  
+  /* Mobile App Feel Improvements */
+  -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */
+  -webkit-touch-callout: none; /* Disable long-press menu */
+  user-select: none; /* Disable text selection for app-like feel */
+  cursor: default;
+  
+  /* Safe Area for Mobile with Notches */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Allow text selection in specific areas like inputs or articles if needed */
+input, textarea, .selectable-text {
+  user-select: text;
+}
+
+/* Utility for padding if needed specifically */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }

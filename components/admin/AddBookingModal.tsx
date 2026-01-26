@@ -41,9 +41,9 @@ export default function AddBookingModal() {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="bg-medical-teal-600 hover:bg-medical-teal-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="bg-medical-teal-600 hover:bg-medical-teal-700 text-white px-4 py-1.5 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
             >
-                <Plus size={20} /> Add Booking
+                <Plus size={18} /> Add Booking
             </button>
 
             {isOpen && (

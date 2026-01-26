@@ -15,10 +15,15 @@ export default async function SiteLayout({
         <>
             <MaintenancePopup maintenanceMode={isMaintenanceMode} />
             <Navbar />
-            <main className="min-h-screen pt-[130px]">
+            <main className="min-h-screen pt-[130px] pb-24 md:pb-0">
                 {children}
             </main>
-            <Footer />
+            <div className="hidden md:block">
+                <Footer />
+            </div>
+            <div className="md:hidden pb-24">
+                <Footer />
+            </div>
         </>
     );
 }

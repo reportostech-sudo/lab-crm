@@ -36,7 +36,7 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
 
     return (
         <tr className="hover:bg-gray-50 transition-colors">
-            <td className="px-6 py-4 text-gray-500 text-sm">
+            <td className="px-2 py-2 text-gray-500 text-xs">
                 <button
                     onClick={() => setIsViewModalOpen(true)}
                     className="hover:text-medical-teal-600 hover:underline font-bold transition-colors"
@@ -44,23 +44,25 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                     #{booking.id.slice(-5).toUpperCase()}
                 </button>
             </td>
-            <td className="px-6 py-4 font-medium text-gray-900">
-                <div>{booking.patientName}</div>
-                <div className="text-xs text-gray-500">{booking.phone}</div>
+            <td className="px-2 py-2 font-medium text-gray-900 text-xs max-w-[150px] truncate">
+                <div className="truncate" title={booking.patientName}>{booking.patientName}</div>
+                <div className="text-[10px] text-gray-500">{booking.phone}</div>
             </td>
-            <td className="px-6 py-4 text-gray-600">
-                {booking.testType}
-                {booking.type === 'HOME_COLLECTION' && (
-                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                        Home
-                    </span>
-                )}
+            <td className="px-2 py-2 text-gray-600 text-xs max-w-[150px] truncate">
+                <div className="truncate" title={booking.testType}>
+                    {booking.testType}
+                    {booking.type === 'HOME_COLLECTION' && (
+                        <span className="ml-1 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
+                            Home
+                        </span>
+                    )}
+                </div>
             </td>
-            <td className="px-6 py-4 text-gray-600">
+            <td className="px-2 py-2 text-gray-600 text-xs w-24">
                 {new Date(booking.date).toLocaleDateString()}
             </td>
-            <td className="px-6 py-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${booking.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
+            <td className="px-2 py-2">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${booking.status === 'PENDING' ? 'bg-orange-100 text-orange-700' :
                     booking.status === 'ASSIGNED' ? 'bg-blue-100 text-blue-700' :
                         booking.status === 'COLLECTED' ? 'bg-indigo-100 text-indigo-700' :
                             booking.status === 'RECEIVED_AT_LAB' ? 'bg-purple-100 text-purple-700' :
@@ -71,14 +73,14 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                     {booking.status}
                 </span>
                 {booking.assignedTo && (
-                    <div className="text-xs text-gray-500 mt-1">
-                        Assigned: {booking.assignedTo.name}
+                    <div className="text-[10px] text-gray-500 mt-1 truncate max-w-[100px]" title={booking.assignedTo.name}>
+                        {booking.assignedTo.name}
                     </div>
                 )}
 
-                <div className="text-[10px] text-gray-400 mt-2 space-y-1 font-mono">
+                <div className="text-[9px] text-gray-400 mt-1 space-y-0.5 font-mono">
                     {booking.assignedAt && (
-                        <div className="text-blue-600 font-medium">Assigned: {new Date(booking.assignedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div className="text-blue-600 font-medium">Asgn: {new Date(booking.assignedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     )}
                     {booking.requests && booking.requests.length > 0 && booking.requests[0]?.createdAt && (
                         <div>Req: {new Date(booking.requests[0].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
@@ -87,26 +89,26 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                         <div className="text-orange-600 font-medium">Col: {new Date(booking.collectedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     )}
                     {booking.receivedAt && (
-                        <div className="text-purple-600 font-medium">Drop: {new Date(booking.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div className="text-purple-600 font-medium">Lab: {new Date(booking.receivedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     )}
                 </div>
             </td>
-            <td className="px-6 py-4">
+            <td className="px-2 py-2">
                 {/* Sample ID Input */}
                 {booking.sampleId ? (
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-mono font-medium text-gray-700 bg-gray-50 px-2 py-1 rounded border border-gray-200">
+                    <div className="flex items-center gap-1">
+                        <span className="text-xs font-mono font-medium text-gray-700 bg-gray-50 px-1 py-0.5 rounded border border-gray-200">
                             {booking.sampleId}
                         </span>
                         <button
                             onClick={() => setIsEditModalOpen(true)}
-                            className="text-gray-400 hover:text-medical-teal-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                            className="text-gray-400 hover:text-medical-teal-600 transition-colors p-0.5 rounded-full hover:bg-gray-100"
                         >
-                            <Pencil size={12} />
+                            <Pencil size={10} />
                         </button>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                         <form action={async (formData) => {
                             await updateSampleId(formData);
                             router.refresh();
@@ -116,20 +118,20 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                                 type="text"
                                 name="sampleId"
                                 defaultValue={booking.sampleId || ''}
-                                placeholder="Sample ID"
-                                className="w-24 text-xs border border-gray-300 rounded px-2 py-1 focus:border-medical-teal-500 focus:ring-1 focus:ring-medical-teal-500"
+                                placeholder="Spl ID"
+                                className="w-16 text-[10px] border border-gray-300 rounded px-1 py-0.5 focus:border-medical-teal-500 focus:ring-1 focus:ring-medical-teal-500"
                             />
                             <button type="submit" className="text-gray-400 hover:text-medical-teal-600">
-                                <ArrowRight size={14} />
+                                <ArrowRight size={12} />
                             </button>
                         </form>
                         {/* Also allow full edit if needed even before Sample ID is set? Maybe not necessary but good for UX */}
                         <button
                             onClick={() => setIsEditModalOpen(true)}
-                            className="text-gray-300 hover:text-medical-teal-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                            className="text-gray-300 hover:text-medical-teal-600 transition-colors p-0.5 rounded-full hover:bg-gray-100"
                             title="Edit Full Details"
                         >
-                            <Pencil size={12} />
+                            <Pencil size={10} />
                         </button>
                     </div>
                 )}
@@ -141,38 +143,38 @@ export default function BookingRow({ booking, collectors }: { booking: any; coll
                     />
                 )}
             </td>
-            <td className="px-6 py-4">
-                <div className="flex flex-col items-start gap-1">
-                    <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded border ${booking.source === 'WEBSITE' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+            <td className="px-2 py-2">
+                <div className="flex flex-col items-start gap-0.5">
+                    <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${booking.source === 'WEBSITE' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                         'bg-purple-50 text-purple-600 border-purple-100'
                         }`}>
                         {booking.source === 'ADMIN' ? 'PORTAL' : (booking.source || 'WEBSITE')}
                     </span>
                     {booking.createdBy && (
-                        <span className="text-[10px] text-gray-500 font-medium px-1">
+                        <span className="text-[9px] text-gray-500 font-medium px-1 truncate max-w-[80px]">
                             by {booking.createdBy.name?.split(' ')[0] || 'Admin'}
                         </span>
                     )}
                 </div>
             </td>
-            <td className="px-6 py-4 text-center">
+            <td className="px-2 py-2 text-center">
                 {/* Report Status */}
                 {booking.reportUrl ? (
                     <a href={booking.reportUrl} target="_blank" className="text-medical-teal-600 hover:underline text-xs font-bold flex items-center justify-center gap-1">
-                        <FileText size={14} /> View
+                        <FileText size={12} /> View
                     </a>
                 ) : (
-                    <span className="text-gray-400 text-xs italic">Pending</span>
+                    <span className="text-gray-400 text-[10px] italic">Pending</span>
                 )}
             </td>
-            <td className="px-6 py-4 text-right sticky right-0 bg-white z-10 shadow-[rgba(0,0,0,0.05)_0px_0px_10px_-5px]">
-                <div className="flex justify-end items-center gap-2">
-                    {isLoading && <Loader2 className="animate-spin text-gray-400" size={16} />}
+            <td className="px-2 py-2 text-right sticky right-0 bg-white z-10 shadow-[rgba(0,0,0,0.05)_0px_0px_10px_-5px]">
+                <div className="flex flex-col justify-center items-end gap-2">
+                    {isLoading && <Loader2 className="animate-spin text-gray-400" size={14} />}
 
                     {/* Status Actions */}
                     {(booking.status === 'PENDING' || booking.status === 'ASSIGNED') && booking.type === 'HOME_COLLECTION' && (
                         <div className="flex flex-col gap-2 items-end">
-                            {booking.requests && booking.requests.length > 0 && booking.requests.map((req: any) => (
+                            {booking.requests && booking.requests.filter((r: any) => r.status === 'PENDING').length > 0 && booking.requests.filter((r: any) => r.status === 'PENDING').map((req: any) => (
                                 <div key={req.id} className="flex items-center gap-2 bg-yellow-50 px-2 py-1 rounded border border-yellow-100 animate-pulse">
                                     <span className="text-[10px] text-yellow-800 font-medium">{req.collector.name} requested</span>
                                     <button

@@ -107,16 +107,14 @@ export default function Sidebar({ role, permissions = [], logoUrl }: { role: str
                     const isActive = pathname === item.href;
 
                     // Logic for badges
-                    let badgeCount = 0;
-                    let badgeColor = "bg-red-500";
+                    const badges = [];
 
                     if (item.name === "Bookings") {
-                        badgeCount = counts.pendingBookings + counts.pendingRequests;
-                        // Determine color
                         if (counts.pendingBookings > 0) {
-                            badgeColor = "bg-yellow-500 text-black"; // Yellow for web bookings
-                        } else if (counts.pendingRequests > 0) {
-                            badgeColor = "bg-red-500"; // Red for requests
+                            badges.push({ count: counts.pendingBookings, color: "bg-yellow-500 text-black" });
+                        }
+                        if (counts.pendingRequests > 0) {
+                            badges.push({ count: counts.pendingRequests, color: "bg-red-500 text-white" });
                         }
                     }
 
@@ -133,8 +131,8 @@ export default function Sidebar({ role, permissions = [], logoUrl }: { role: str
 
                                 <span className="inline-flex justify-center items-center relative">
                                     <Icon size={20} />
-                                    {isCollapsed && badgeCount > 0 && (
-                                        <span className={`absolute -top-1 -right-1 block h-2.5 w-2.5 rounded-full ${badgeColor.split(' ')[0]} ring-2 ring-medical-teal-900`} />
+                                    {isCollapsed && (badges.length > 0) && (
+                                        <span className={`absolute -top-1 -right-1 block h-2.5 w-2.5 rounded-full ${badges.some(b => b.color.includes('red')) ? 'bg-red-500' : 'bg-yellow-500'} ring-2 ring-medical-teal-900`} />
                                     )}
                                 </span>
 
@@ -143,11 +141,13 @@ export default function Sidebar({ role, permissions = [], logoUrl }: { role: str
                                         <span className="text-sm font-medium tracking-wide truncate">
                                             {item.name}
                                         </span>
-                                        {badgeCount > 0 && (
-                                            <span className={`ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white rounded-full ${badgeColor}`}>
-                                                {badgeCount}
-                                            </span>
-                                        )}
+                                        <div className="flex items-center gap-1">
+                                            {badges.map((badge, idx) => (
+                                                <span key={idx} className={`inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none rounded-full ${badge.color}`}>
+                                                    {badge.count}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
 
@@ -155,11 +155,11 @@ export default function Sidebar({ role, permissions = [], logoUrl }: { role: str
                                 {isCollapsed && (
                                     <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none flex items-center gap-2">
                                         {item.name}
-                                        {badgeCount > 0 && (
-                                            <span className={`${badgeColor} px-1.5 rounded-full text-[10px]`}>
-                                                {badgeCount}
+                                        {badges.map((badge, idx) => (
+                                            <span key={idx} className={`${badge.color} px-1.5 rounded-full text-[10px]`}>
+                                                {badge.count}
                                             </span>
-                                        )}
+                                        ))}
                                     </div>
                                 )}
                             </Link>

@@ -28,28 +28,25 @@ export default async function BookingsPage({ searchParams }: PageProps) {
     return (
         <div className="space-y-6">
             <AutoRefresh intervalMs={5000} />
-            <div className="flex justify-between items-center">
-
-                <AddBookingModal />
-            </div>
-
             {/* Search and Filters */}
-            <BookingFilters />
+            <BookingFilters>
+                <AddBookingModal />
+            </BookingFilters>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto min-h-[400px]">
-                    <table className="w-full text-left">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                <div className="overflow-auto relative h-[calc(100vh-220px)] min-h-[400px]">
+                    <table className="w-full text-left border-collapse">
                         <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-gray-500 text-sm uppercase">
-                                <th className="px-6 py-4 font-medium">ID</th>
-                                <th className="px-6 py-4 font-medium">Patient</th>
-                                <th className="px-6 py-4 font-medium">Test Type</th>
-                                <th className="px-6 py-4 font-medium">Date</th>
-                                <th className="px-6 py-4 font-medium">Status / Timeline</th>
-                                <th className="px-6 py-4 font-medium">Sample ID</th>
-                                <th className="px-6 py-4 font-medium">Source</th>
-                                <th className="px-6 py-4 font-medium text-center">Report</th>
-                                <th className="px-6 py-4 font-medium text-right sticky right-0 bg-gray-50 z-10 shadow-[rgba(0,0,0,0.05)_0px_0px_10px_-5px]">Actions</th>
+                            <tr className="text-gray-500 text-xs uppercase sticky top-0 z-20 bg-gray-50 shadow-sm">
+                                <th className="px-2 py-2 font-medium w-16">ID</th>
+                                <th className="px-2 py-2 font-medium max-w-[150px]">Patient</th>
+                                <th className="px-2 py-2 font-medium max-w-[150px]">Test Type</th>
+                                <th className="px-2 py-2 font-medium w-24">Date</th>
+                                <th className="px-2 py-2 font-medium">Status / Timeline</th>
+                                <th className="px-2 py-2 font-medium">Sample ID</th>
+                                <th className="px-2 py-2 font-medium">Source</th>
+                                <th className="px-2 py-2 font-medium text-center">Report</th>
+                                <th className="px-2 py-2 font-medium text-right sticky right-0 bg-gray-50 z-30 shadow-[rgba(0,0,0,0.05)_0px_0px_10px_-5px]">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">

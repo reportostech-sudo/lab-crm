@@ -66,6 +66,37 @@ export async function authenticate(
     redirect(redirectUrl);
 }
 
+
 export async function logout() {
-    await signOut({ redirectTo: '/' });
+    await signOut({ redirectTo: '/login' });
+}
+
+import { auth } from '@/auth';
+
+export async function getMyBookings() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    try {
+        const bookings = await prisma.booking.findMany({
+            where: {
+                OR: [
+                    { assignedToId: session.user.id },
+                    { createdById: session.user.id }
+                ]
+            },
+            select: {
+                id: true,
+                status: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: 10 // Only check latest 10 to check for updates
+        });
+        return bookings;
+    } catch (error) {
+        console.error("Failed to fetch bookings for notifications", error);
+        return [];
+    }
 }

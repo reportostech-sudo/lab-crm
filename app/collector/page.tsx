@@ -28,13 +28,16 @@ export default async function CollectorDashboard() {
 
     return (
         <div className="container mx-auto max-w-4xl p-4 space-y-8">
-            <header className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-4 z-10 opacity-95 backdrop-blur">
+            {/* Desktop Header */}
+            <header className="hidden md:flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-4 z-10 opacity-95 backdrop-blur">
                 <div>
                     <h1 className="text-xl font-bold text-gray-800">Collector Dashboard</h1>
                     <p className="text-sm text-gray-500">Welcome, {session.user.name}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <AutoRefresh />
+                    <div className="hidden">
+                        <AutoRefresh />
+                    </div>
                     <form action={logout}>
                         <button type="submit" className="flex items-center gap-2 text-sm font-medium text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
                             <LogOut size={16} /> Sign Out
@@ -42,6 +45,12 @@ export default async function CollectorDashboard() {
                     </form>
                 </div>
             </header>
+
+            {/* Mobile Header (App Style) */}
+            <div className="md:hidden pt-2 pb-4">
+                <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>
+                <p className="text-sm text-gray-500">Welcome back, {session.user.name?.split(' ')[0]}</p>
+            </div>
 
             <section>
                 <CollectorStats stats={stats} />

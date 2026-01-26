@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
@@ -8,11 +8,32 @@ import { prisma } from '@/app/lib/prisma'
 import { auth } from '@/auth'
 import { Providers } from '@/components/Providers'
 
+import MobileBottomNav from '@/components/MobileBottomNav'
+import PullToRefresh from '@/components/PullToRefresh'
+import NotificationManager from '@/components/NotificationManager'
+import NativeGuard from '@/components/NativeGuard'
+
 const inter = Inter({ subsets: ['latin'] })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Prevents zooming like a native app
+  themeColor: '#ffffff',
+}
 
 export const metadata: Metadata = {
   title: "Sukra House of Diagnostic",
   description: "Advanced Medical Lab Services",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Sukra Lab',
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 // Simple server-side tracking
@@ -51,7 +72,12 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
-          {children}
+          <NativeGuard />
+          <NotificationManager />
+          <PullToRefresh>
+            {children}
+          </PullToRefresh>
+          <MobileBottomNav />
         </Providers>
       </body>
     </html>
