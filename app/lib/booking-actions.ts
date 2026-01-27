@@ -604,6 +604,66 @@ export async function fetchAvailableBookings() {
     }
 }
 
+// Fetch collector history (completed/received bookings) for the logged-in user
+export async function getCollectorHistory() {
+    const session = await auth();
+    if (!session?.user || (session.user as any).role !== 'COLLECTOR') return [];
+
+    try {
+        const bookings = await prisma.booking.findMany({
+            where: {
+                assignedToId: session.user.id,
+                status: {
+                    in: ['COLLECTED', 'RECEIVED_AT_LAB', 'PROCESSING', 'COMPLETED']
+                }
+            },
+            include: {
+                assignedTo: true,
+                createdBy: true,
+            },
+            orderBy: {
+                date: 'desc'
+            }
+        });
+        return bookings;
+    } catch (error) {
+        console.error("Error fetching collector history:", error);
+        return [];
+    }
+}
+
+// Fetch bookings for the logged-in regular user (Patient)
+export async function getUserBookings() {
+    const session = await auth();
+    if (!session?.user) return [];
+
+    try {
+        // Fetch by email (primary) or userId (if previously connected)
+        // If the user registered via website, they are created in User table. 
+        // Bookings might be linked by email if not directly by ID during creation content.
+
+        const bookings = await prisma.booking.findMany({
+            where: {
+                OR: [
+                    { email: session.user.email }, // Matched by email
+                    // { userId: session.user.id } // If we had a direct link, but 'createdBy' is for admins/staff.
+                    // For now relying on email match is safest for patients.
+                ]
+            },
+            include: {
+                assignedTo: true
+            },
+            orderBy: {
+                date: 'desc'
+            }
+        });
+        return bookings;
+    } catch (error) {
+        console.error("Error fetching user bookings:", error);
+        return [];
+    }
+}
+
 export async function getCollectorStats() {
     try {
         const session = await auth();

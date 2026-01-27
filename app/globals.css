@@ -55,3 +55,8 @@ input, textarea, .selectable-text {
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Hide Next.js Dev Tools Overlay for App Feel */
+nextjs-portal, [data-nextjs-toast="true"], #nextjs-dev-tools-overlay {
+  display: none !important;
+}

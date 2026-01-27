@@ -57,7 +57,14 @@ export default function CollectorBookingsList({ bookings }: { bookings: any[] })
                         </div>
                         <div className="flex items-center gap-2">
                             <Calendar size={14} className="text-gray-400" />
-                            <span>{new Date(booking.date).toLocaleDateString()}</span>
+                            <div className="flex flex-col text-xs">
+                                <span>{new Date(booking.date).toLocaleDateString()}</span>
+                                {booking.assignedAt && (
+                                    <span className="text-gray-400 font-medium">
+                                        {new Date(booking.assignedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 

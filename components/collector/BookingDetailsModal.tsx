@@ -71,6 +71,13 @@ export function BookingDetailsModal({ booking, onClose, action }: { booking: any
                                 <p className="text-xs font-medium">{booking.requests?.[0]?.createdAt ? new Date(booking.requests[0].createdAt).toLocaleString() : 'N/A'}</p>
                             </div>
 
+                            {/* Assigned Time */}
+                            <div className="relative">
+                                <div className={`absolute -left-[21px] w-3 h-3 rounded-full border-2 ${booking.assignedAt ? 'bg-blue-500 border-blue-100' : 'bg-gray-300 border-gray-100'}`} />
+                                <p className="text-xs text-gray-500">Assigned</p>
+                                <p className="text-xs font-medium">{booking.assignedAt ? new Date(booking.assignedAt).toLocaleString() : 'Pending'}</p>
+                            </div>
+
                             {/* Collected Time */}
                             <div className="relative">
                                 <div className={`absolute -left-[21px] w-3 h-3 rounded-full border-2 ${booking.collectedAt ? 'bg-orange-500 border-orange-100' : 'bg-gray-300 border-gray-100'}`} />

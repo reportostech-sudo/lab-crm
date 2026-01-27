@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, CalendarPlus, User, Microscope, Menu as MenuIcon, MapPin, X, LogOut, Settings, Users, Activity, Beaker, Tag, Package } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -11,67 +11,33 @@ import { logout } from "@/app/lib/actions";
 
 export default function MobileBottomNav() {
     const pathname = usePathname();
-    const { data: session } = useSession();
+    const router = useRouter();
+    const { data: session, status } = useSession();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Only show for logged in Admins or Collectors
-    // debug: showing status even if not logged in to verify
-    // if (!session?.user) return null; 
+    // Don't render anything while loading or if not authenticated
+    if (status === 'loading' || status === 'unauthenticated') return null;
 
     const navItems = [];
     let fullMenuItems: any[] = [];
 
-    // DEBUG OVERLAY
-    if (true) {
-        navItems.push({
-            name: session?.user?.role || "No Role",
-            href: "#",
-            icon: User,
-            isMenuTrigger: false
-        });
+    if (session?.user?.role !== 'COLLECTOR') {
+        return null;
     }
 
-    if (session?.user?.role === 'ADMIN') {
-        // Bottom Nav Items (Top 3 + Menu)
-        navItems.push(
-            { name: "Dashboard", href: "/admin", icon: Home },
-            { name: "Bookings", href: "/admin/bookings", icon: CalendarPlus },
-            { name: "Map", href: "/admin/live-map", icon: MapPin },
-        );
+    // Collector Role
+    navItems.push(
+        { name: "Tasks", href: "/collector", icon: Home },
+        { name: "History", href: "/collector/history", icon: CalendarPlus },
+        { name: "Profile", href: "/collector/profile", icon: User }
+    );
 
-        // Full Menu Items (for Overlay)
-        fullMenuItems = [
-            { name: "Dashboard", href: "/admin", icon: Home },
-            { name: "Bookings", href: "/admin/bookings", icon: CalendarPlus },
-            { name: "Users", href: "/admin/users", icon: Users },
-            { name: "Doctors", href: "/admin/doctors", icon: Activity },
-            { name: "Tests", href: "/admin/tests", icon: Beaker },
-            { name: "Categories", href: "/admin/categories", icon: Tag },
-            { name: "Tracking", href: "/admin/tracking", icon: MapPin },
-            { name: "Packages", href: "/admin/packages", icon: Package },
-            { name: "Settings", href: "/admin/settings", icon: Settings },
-            { name: "Profile", href: "/admin/profile", icon: User },
-        ];
-    } else if (session?.user?.role === 'COLLECTOR') {
-        // Bottom Nav Items
-        navItems.push(
-            { name: "Tasks", href: "/collector", icon: Home },
-            { name: "History", href: "/collector/history", icon: CalendarPlus },
-            // Profile is now in Menu, so we just have 2 items + Menu? Or keep Profile?
-            // User asked for Menu. Let's keep specific Profile in nav or just rely on Menu?
-            // Let's keep Profile in nav for quick access, and Menu for "More".
-            { name: "Profile", href: "/collector/profile", icon: User }
-        );
-
-        // Full Menu Items
-        fullMenuItems = [
-            { name: "My Tasks", href: "/collector", icon: Home },
-            { name: "History", href: "/collector/history", icon: CalendarPlus },
-            { name: "Profile", href: "/collector/profile", icon: User },
-        ];
-    } else {
-        return null; // Regular user
-    }
+    // Full Menu Items
+    fullMenuItems = [
+        { name: "My Tasks", href: "/collector", icon: Home },
+        { name: "History", href: "/collector/history", icon: CalendarPlus },
+        { name: "Profile", href: "/collector/profile", icon: User },
+    ];
 
     // Add Menu Trigger
     navItems.push({ name: "More", href: "#menu", icon: MenuIcon, isMenuTrigger: true });
@@ -175,6 +141,12 @@ export default function MobileBottomNav() {
                                 } else if (item.name === 'Profile' && pathname === item.href) {
                                     // Debug trigger
                                     handleProfileClick(e);
+                                    setIsMenuOpen(false);
+                                } else if (isActive) {
+                                    // Refresh if clicking active item
+                                    e.preventDefault();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    router.refresh();
                                     setIsMenuOpen(false);
                                 } else {
                                     setIsMenuOpen(false);

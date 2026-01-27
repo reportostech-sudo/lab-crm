@@ -1,5 +1,6 @@
 import Sidebar from "@/components/admin/Sidebar";
 import Topbar from "@/components/admin/Topbar";
+import MobileSidebarWrapper from "@/components/admin/MobileSidebarWrapper";
 import { getSystemSetting } from "@/app/lib/settings-actions";
 
 import { auth } from "@/auth";
@@ -52,13 +53,8 @@ export default async function AdminLayout({
                 <div className="hidden md:block">
                     <Topbar user={session?.user} />
                 </div>
-                {/* Mobile Header */}
-                <header className="md:hidden bg-white p-4 border-b flex justify-between items-center sticky top-0 z-10">
-                    <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
-                    <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold border border-teal-200">
-                        {session?.user?.name?.[0] || 'A'}
-                    </div>
-                </header>
+                {/* Mobile Header & Sidebar */}
+                <MobileSidebarWrapper role={role} permissions={permissions} logoUrl={logoUrl ?? null} />
 
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-6 pb-24 md:pb-6">
                     {children}

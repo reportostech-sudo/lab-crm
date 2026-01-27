@@ -73,6 +73,7 @@ export default async function RootLayout({
       <body className={inter.className}>
         <Providers>
           <NativeGuard />
+          <Navbar />
           <NotificationManager />
           <PullToRefresh>
             {children}

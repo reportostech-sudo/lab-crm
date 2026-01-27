@@ -27,7 +27,7 @@ export default async function CollectorDashboard() {
     const stats = await getCollectorStats();
 
     return (
-        <div className="container mx-auto max-w-4xl p-4 space-y-8">
+        <div className="container mx-auto max-w-4xl p-4 space-y-8 pb-24">
             {/* Desktop Header */}
             <header className="hidden md:flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-4 z-10 opacity-95 backdrop-blur">
                 <div>
@@ -47,7 +47,7 @@ export default async function CollectorDashboard() {
             </header>
 
             {/* Mobile Header (App Style) */}
-            <div className="md:hidden pt-2 pb-4">
+            <div className="md:hidden pt-4 pb-4 sticky top-0 bg-white/95 backdrop-blur z-20 -mx-4 px-4 border-b border-gray-50 shadow-sm transition-all">
                 <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>
                 <p className="text-sm text-gray-500">Welcome back, {session.user.name?.split(' ')[0]}</p>
             </div>
