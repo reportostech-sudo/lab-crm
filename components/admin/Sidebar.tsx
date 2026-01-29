@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Calendar, Users, FileText, Settings, LogOut, Shield, ChevronLeft, ChevronRight, Activity, Beaker, Package, MapPin, Tag } from "lucide-react";
+import { LayoutDashboard, Calendar, Users, FileText, Settings, LogOut, Shield, ChevronLeft, ChevronRight, Activity, Beaker, Package, MapPin, Tag, Clock } from "lucide-react";
 import { logout } from "@/app/lib/actions";
 
 const menuItems = [
@@ -14,6 +14,7 @@ const menuItems = [
     { name: "Tests Menu", href: "/admin/tests", icon: Beaker },
     { name: "Categories", href: "/admin/categories", icon: Tag }, // New Link
     { name: "Live Tracking", href: "/admin/tracking", icon: MapPin },
+    { name: "Attendance", href: "/admin/attendance", icon: Clock },
     { name: "Packages", href: "/admin/packages", icon: Package },
 
 

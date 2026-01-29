@@ -7,6 +7,7 @@ import CollectorBookingsList from "@/components/collector/CollectorBookingsList"
 import CollectorStats from "@/components/collector/CollectorStats";
 import { logout } from "@/app/lib/actions";
 import AutoRefresh from "@/components/admin/AutoRefresh";
+import AttendanceControl from "@/components/collector/AttendanceControl";
 
 export const metadata = {
     title: "Collector Dashboard | Sukra House of Diagnostic",
@@ -53,6 +54,7 @@ export default async function CollectorDashboard() {
             </div>
 
             <section>
+                <AttendanceControl />
                 <CollectorStats stats={stats} />
             </section>
 

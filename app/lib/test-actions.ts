@@ -5,22 +5,75 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { logActivity } from './log-actions';
 
-export async function getTests(query?: string) {
+export async function getTests(
+    query?: string,
+    page: number = 1,
+    limit: number = 10,
+    category?: string,
+    sortBy: string = 'createdAt',
+    sortOrder: 'asc' | 'desc' = 'desc'
+) {
     try {
-        const where = query ? {
-            OR: [
+        const skip = (page - 1) * limit;
+        const where: any = {};
+
+        if (query) {
+            where.OR = [
                 { name: { contains: query, mode: 'insensitive' as const } },
                 { category: { contains: query, mode: 'insensitive' as const } }
-            ]
-        } : {};
+            ];
+        }
 
+        if (category && category !== 'All') {
+            where.category = category;
+        }
+
+        // Validate sortBy field to prevent injection/errors
+        const validSortFields = ['name', 'category', 'price', 'createdAt'];
+        const actualSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+        const [tests, total] = await Promise.all([
+            prisma.labTest.findMany({
+                where,
+                orderBy: { [actualSortBy]: sortOrder },
+                skip,
+                take: limit
+            }),
+            prisma.labTest.count({ where })
+        ]);
+
+        return {
+            tests,
+            totalPages: Math.ceil(total / limit),
+            currentPage: page,
+            total
+        };
+    } catch (error) {
+        console.error('Failed to fetch tests:', error);
+        return { tests: [], totalPages: 0, currentPage: 1, total: 0 };
+    }
+}
+
+export async function getAllTestsForExport() {
+    try {
         const tests = await prisma.labTest.findMany({
-            where,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { name: 'asc' }
         });
         return tests;
     } catch (error) {
-        console.error('Failed to fetch tests:', error);
+        console.error('Failed to fetch tests for export:', error);
+        return [];
+    }
+}
+
+export async function fetchCategories() {
+    try {
+        const categories = await prisma.category.findMany({
+            orderBy: { name: 'asc' }
+        });
+        return categories;
+    } catch (error) {
+        console.error('Failed to fetch categories:', error);
         return [];
     }
 }

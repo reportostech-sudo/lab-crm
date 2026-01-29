@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 import { getTests } from '@/app/lib/test-actions';
 
 export default async function ServicesPage() {
-    const tests = await getTests();
+    const { tests } = await getTests();
     const services = [
         {
             title: "Pathology",

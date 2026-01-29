@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function PackagesPage() {
     const packages = await getPackages();
-    const tests = await getTests(); // For the common tests pricing table
+    const { tests } = await getTests(); // For the common tests pricing table
 
     return (
         <div className="bg-gray-50 min-h-screen">

@@ -34,7 +34,7 @@ export default function TestFormToggle({ test }: { test?: any }) {
                 className="bg-medical-teal-600 hover:bg-medical-teal-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors shadow-sm whitespace-nowrap"
             >
                 <Plus size={18} />
-                Add Test
+                <span className="hidden xl:inline">Add Test</span>
             </button>
 
             {isOpen && (

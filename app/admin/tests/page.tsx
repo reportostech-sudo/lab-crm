@@ -1,29 +1,48 @@
-import { getTests } from '@/app/lib/test-actions';
+import { getTests, fetchCategories } from '@/app/lib/test-actions';
 import TestFormToggle from '@/components/admin/TestFormToggle';
 import DoctorSearch from '@/components/admin/DoctorSearch';
 import { FileText, Tag, IndianRupee } from 'lucide-react';
 import ImportTestsButton from '@/components/admin/ImportTestsButton';
+import Pagination from '@/components/admin/Pagination';
+import CategoryFilter from '@/components/admin/CategoryFilter';
+import ExportTestsButton from '@/components/admin/ExportTestsButton';
+import SortableHeading from '@/components/admin/SortableHeading';
 
-export default async function AdminTestsPage(props: { searchParams: Promise<{ query?: string }> }) {
+export default async function AdminTestsPage(props: { searchParams: Promise<{ query?: string, page?: string, limit?: string, category?: string, sort?: string, order?: string }> }) {
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
-    const tests = await getTests(query);
+    const category = searchParams?.category;
+    const sortBy = searchParams?.sort || 'createdAt';
+    const sortOrder = (searchParams?.order as 'asc' | 'desc') || 'desc';
+    const currentPage = Number(searchParams?.page) || 1;
+    const limit = Number(searchParams?.limit) || 10;
+
+    const { tests, totalPages, total } = await getTests(query, currentPage, limit, category, sortBy, sortOrder);
+    const categories = await fetchCategories();
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div>
-
-                    <p className="text-gray-500 text-sm mt-1">Manage lab tests, prices, and categories</p>
+            <div className="flex flex-col lg:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 gap-4">
+                <div className="flex items-center gap-3 min-w-fit">
+                    <h1 className="text-xl font-bold text-gray-800">Lab Tests</h1>
+                    <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-gray-200" title="Total Tests">
+                        {total}
+                    </span>
                 </div>
-                <div className="flex items-center gap-4">
-                    <DoctorSearch />
-                    <div className="bg-medical-teal-50 px-4 py-2 rounded-lg border border-medical-teal-100 whitespace-nowrap">
-                        <span className="text-sm font-bold text-medical-teal-700">Total: {tests.length}</span>
+
+                <div className="flex items-center gap-2 w-full lg:w-auto overflow-hidden">
+                    <div className="min-w-[140px] flex-1 lg:w-64">
+                        <DoctorSearch />
                     </div>
-                    {/* Add Test Button */}
-                    <ImportTestsButton />
-                    <TestFormToggle />
+                    <div className="min-w-[120px] flex-1 lg:w-48">
+                        <CategoryFilter categories={categories} />
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                        <ExportTestsButton />
+                        <ImportTestsButton />
+                        <TestFormToggle />
+                    </div>
                 </div>
             </div>
 
@@ -31,9 +50,9 @@ export default async function AdminTestsPage(props: { searchParams: Promise<{ qu
                 <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th className="px-6 py-4 font-bold text-gray-600">Test Name</th>
-                            <th className="px-6 py-4 font-bold text-gray-600">Category</th>
-                            <th className="px-6 py-4 font-bold text-gray-600">Price</th>
+                            <SortableHeading column="name" label="Test Name" className="px-6 py-4 font-bold text-gray-600" />
+                            <SortableHeading column="category" label="Category" className="px-6 py-4 font-bold text-gray-600" />
+                            <SortableHeading column="price" label="Price" className="px-6 py-4 font-bold text-gray-600" />
                             <th className="px-6 py-4 font-bold text-gray-600">Actions</th>
                         </tr>
                     </thead>
@@ -77,6 +96,8 @@ export default async function AdminTestsPage(props: { searchParams: Promise<{ qu
                     </tbody>
                 </table>
             </div>
+
+            <Pagination totalPages={totalPages} totalCount={total} />
         </div>
     );
 }

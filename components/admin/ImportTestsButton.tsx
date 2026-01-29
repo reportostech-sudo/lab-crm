@@ -57,7 +57,7 @@ export default function ImportTestsButton() {
                 onClick={() => setIsOpen(true)}
                 className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
             >
-                <Upload size={18} /> Import Excel
+                <Upload size={18} /> <span className="hidden xl:inline">Import Excel</span>
             </button>
 
             {isOpen && (

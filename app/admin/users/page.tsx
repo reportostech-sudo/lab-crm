@@ -1,6 +1,8 @@
 import { fetchUsers, fetchGroups } from "@/app/lib/user-actions";
 import AddUserModal from "@/components/admin/AddUserModal";
 import EditUserModal from "@/components/admin/EditUserModal";
+import UnblockUserButton from "@/components/admin/UnblockUserButton"; // New Import
+import { ShieldAlert } from "lucide-react";
 
 export const metadata = {
     title: "User Management | Sukra Admin",
@@ -13,7 +15,6 @@ export default async function UsersPage() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-
                 <AddUserModal groups={groups} />
             </div>
 
@@ -31,7 +32,16 @@ export default async function UsersPage() {
                     <tbody className="divide-y divide-gray-100">
                         {users.map((user: any) => (
                             <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-gray-900">{user.name || "No Name"}</td>
+                                <td className="px-6 py-4 font-medium text-gray-900">
+                                    <div className="flex items-center gap-2">
+                                        {user.name || "No Name"}
+                                        {user.isBlocked && (
+                                            <span className="text-red-500" title="Account Blocked">
+                                                <ShieldAlert size={16} />
+                                            </span>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="px-6 py-4 text-gray-600">{user.email}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.role === 'ADMIN'
@@ -50,7 +60,8 @@ export default async function UsersPage() {
                                         <span className="text-gray-400 italic">No Group</span>
                                     )}
                                 </td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                    <UnblockUserButton userId={user.id} isBlocked={user.isBlocked} />
                                     <EditUserModal user={user} groups={groups} />
                                 </td>
                             </tr>

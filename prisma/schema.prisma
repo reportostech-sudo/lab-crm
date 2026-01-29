@@ -28,10 +28,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  // Account Security
+  failedAttempts Int @default(0)
+  isBlocked      Boolean @default(false)
+
   // Location Tracking
   lastLat           Float?
   lastLng           Float?
   lastLocationUpdate DateTime?
+  attendance        Attendance[]
 }
 
 model Group {
@@ -168,6 +173,7 @@ model SystemSetting {
 }
 
 
+
 model Notification {
   id        String   @id @default(cuid())
   title     String
@@ -176,4 +182,21 @@ model Notification {
   isRead    Boolean  @default(false)
   type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
   createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  checkIn   DateTime @default(now())
+  checkOut  DateTime?
+  status    String   @default("PRESENT") // PRESENT, ABSENT (if we auto-create), LATE
+  
+  checkInLat  Float?
+  checkInLng  Float?
+  checkOutLat Float?
+  checkOutLng Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

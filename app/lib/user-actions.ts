@@ -231,3 +231,26 @@ export async function changePassword(prevState: any, formData: FormData) {
         return { message: 'Failed to change password.' };
     }
 }
+
+export async function unlockUser(userId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user || (session.user as any).role !== 'ADMIN') {
+            throw new Error('Unauthorized');
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                isBlocked: false,
+                failedAttempts: 0
+            }
+        });
+
+        revalidatePath('/admin/users');
+        return { success: true, message: 'User unlocked successfully.' };
+    } catch (error) {
+        console.error('Failed to unlock user:', error);
+        return { success: false, message: 'Failed to unlock user.' };
+    }
+}

@@ -20,7 +20,7 @@ export default function DoctorSearch() {
     }, 300);
 
     return (
-        <div className="relative w-full md:w-64">
+        <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
                 type="text"

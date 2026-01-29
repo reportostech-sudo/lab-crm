@@ -30,8 +30,19 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     const user = await getUser(email);
                     if (!user) return null;
 
+                    // Check if blocked
+                    if (user.isBlocked) {
+                        throw new Error("Account is blocked due to too many failed attempts.");
+                    }
+
                     const passwordsMatch = await bcrypt.compare(password, user.password);
                     if (passwordsMatch) {
+                        // Reset failed attempts on success
+                        await prisma.user.update({
+                            where: { id: user.id },
+                            data: { failedAttempts: 0 }
+                        });
+
                         // Log the login activity
                         try {
                             await prisma.auditLog.create({
@@ -46,11 +57,37 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         }
 
                         return user;
+                    } else {
+                        // Increment failed attempts
+                        const newFailedAttempts = (user.failedAttempts || 0) + 1;
+                        const isNowBlocked = newFailedAttempts >= 10;
+
+                        await prisma.user.update({
+                            where: { id: user.id },
+                            data: {
+                                failedAttempts: newFailedAttempts,
+                                isBlocked: isNowBlocked
+                            }
+                        });
+
+                        if (isNowBlocked) {
+                            console.warn(`User ${email} blocked after ${newFailedAttempts} failed attempts.`);
+                            throw new Error("Your account was locked. Please contact admin to unblock.");
+                        } else {
+                            console.warn(`User ${email} failed login. Attempt ${newFailedAttempts}/10.`);
+                            if (newFailedAttempts > 2) {
+                                const remaining = 10 - newFailedAttempts;
+                                throw new Error(`Invalid credentials. You have ${remaining} more attempts remaining.`);
+                            }
+                        }
                     }
                 }
 
                 console.log('Invalid credentials');
-                return null;
+                // Return null calls generic CredentialsSignin, but we want to control the flow mostly above.
+                // If we get here (e.g. user not found), we should also throw or return null.
+                // To prevent enumeration, we usually just say "Invalid credentials"
+                throw new Error("Invalid credentials.");
             },
         }),
     ],

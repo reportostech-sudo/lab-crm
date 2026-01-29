@@ -16,35 +16,56 @@ export async function authenticate(
     try {
         const email = formData.get('email') as string;
 
+        // 1. Pre-check: Check if user exists and is already blocked
+        const existingUser = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, isBlocked: true, failedAttempts: true, role: true, permissions: true }
+        });
+
+        if (existingUser && existingUser.isBlocked) {
+            return "Your account was locked. Please contact admin to unblock.";
+        }
+
         const result = await signIn('credentials', {
             redirect: false,
             ...Object.fromEntries(formData),
         });
 
-        // In server actions, signIn might throw if successful redirect is true, 
-        // but with redirect: false, it returns.
-        // However, NextAuth v5 check:
         if (result?.error) {
+            // 2. Post-check: Login failed. Check if they just got blocked or have attempts remaining.
+            if (existingUser) { // If user existed before
+                const updatedUser = await prisma.user.findUnique({
+                    where: { email },
+                    select: { isBlocked: true, failedAttempts: true }
+                });
+
+                if (updatedUser) {
+                    if (updatedUser.isBlocked) {
+                        return "Your account was locked. Please contact admin to unblock.";
+                    }
+                    if (updatedUser.failedAttempts && updatedUser.failedAttempts > 2) {
+                        const remaining = 10 - updatedUser.failedAttempts;
+                        return `Invalid credentials. You have ${remaining} more attempts remaining.`;
+                    }
+                }
+            }
             return "Invalid credentials.";
         }
 
-        // Fetch user role and permissions to determine redirect
-        const user = await prisma.user.findUnique({
-            where: { email },
-            select: { role: true, permissions: true }
-        });
+        // Login Success - Determine Redirect
+        if (existingUser) {
+            // existingUser might be stale if we didn't re-fetch, but role/perms usually don't change on login *action* (unless verify updates them? No, mostly separate).
+            // If we want to be super safe we can use the `existingUser` we fetched at start.
+            // Or just trust the successful login logic.
 
-        if (user) {
-            const userWithPerms = user as any;
-
-            if (user.role === 'ADMIN') {
+            if (existingUser.role === 'ADMIN') {
                 redirectUrl = '/admin';
-            } else if (user.role === 'COLLECTOR') {
+            } else if (existingUser.role === 'COLLECTOR') {
                 redirectUrl = '/collector';
-            } else if (userWithPerms.permissions && userWithPerms.permissions.length > 0) {
+            } else if (existingUser.permissions && existingUser.permissions.length > 0) {
                 redirectUrl = '/admin';
             } else {
-                redirectUrl = '/'; // Default user dashboard or home
+                redirectUrl = '/';
             }
         }
 
@@ -52,15 +73,8 @@ export async function authenticate(
         if ((error as Error).message.includes('NEXT_REDIRECT')) {
             throw error;
         }
-        if (error instanceof AuthError) {
-            switch (error.type) {
-                case 'CredentialsSignin':
-                    return 'Invalid credentials.';
-                default:
-                    return 'Something went wrong.';
-            }
-        }
-        throw error;
+        console.error("Login unexpected error:", error);
+        return 'Something went wrong.';
     }
 
     redirect(redirectUrl);
