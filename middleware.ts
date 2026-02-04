@@ -28,7 +28,7 @@ export default auth((req) => {
             const permissions = (user as any)?.permissions || [];
             let redirectUrl = '/user'; // Default for USER
 
-            if (user.role === 'ADMIN') {
+            if (user?.role === 'ADMIN') {
                 redirectUrl = '/admin';
             } else if (user.role === 'COLLECTOR' || permissions.includes('mobile_attendance')) {
                 redirectUrl = '/collector';
