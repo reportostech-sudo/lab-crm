@@ -5,6 +5,7 @@ import { prisma } from './prisma';
 import { revalidatePath } from 'next/cache';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import AdmZip from 'adm-zip';
 
 export async function getSystemSetting(key: string) {
     try {
@@ -143,6 +144,7 @@ export async function getCalendarSystem() {
     }
 }
 
+
 export async function setCalendarSystem(system: "AD" | "BS") {
     try {
         await prisma.systemSetting.upsert({
@@ -161,5 +163,78 @@ export async function setCalendarSystem(system: "AD" | "BS") {
         return { success: true, message: `Calendar system updated to ${system}` };
     } catch (error) {
         return { error: "Failed to update calendar system" };
+    }
+}
+
+export async function performSystemUpdate(action: 'prisma-migrate') {
+    try {
+        const session = await auth();
+        if (session?.user?.role !== 'ADMIN') {
+            return { success: false, message: 'Unauthorized access', output: '' };
+        }
+
+        const { exec } = require('child_process');
+        const util = require('util');
+        const execPromise = util.promisify(exec);
+
+        let command = '';
+        if (action === 'prisma-migrate') {
+            command = 'npx prisma migrate deploy';
+        } else {
+            return { success: false, message: 'Invalid action', output: '' };
+        }
+
+        const { stdout, stderr } = await execPromise(command, { cwd: process.cwd() });
+
+        // Revalidate everything after update
+        revalidatePath('/', 'layout');
+
+        return {
+            success: true,
+            message: `Command executed successfully`,
+            output: stdout || stderr
+        };
+    } catch (error) {
+        console.error(`System Update Error (${action}):`, error);
+        return {
+            success: false,
+            message: `Update failed: ${(error as Error).message}`,
+            output: (error as any).stderr || (error as Error).message
+        };
+    }
+}
+
+export async function updateSystemFromFile(formData: FormData) {
+    try {
+        const session = await auth();
+        if (session?.user?.role !== 'ADMIN') {
+            return { success: false, message: 'Unauthorized access' };
+        }
+
+        const file = formData.get('updateZip') as File;
+        if (!file || file.name.split('.').pop()?.toLowerCase() !== 'zip') {
+            return { success: false, message: 'Invalid file. Please upload a .zip file.' };
+        }
+
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        // Save temp zip
+        const tempPath = join(process.cwd(), 'temp-update.zip');
+        await writeFile(tempPath, buffer);
+
+        // Extract
+        const zip = new AdmZip(tempPath);
+        zip.extractAllTo(process.cwd(), true); // Overwrite existing files
+
+        // Clean up zip
+        const fs = require('fs');
+        fs.unlinkSync(tempPath);
+
+        revalidatePath('/', 'layout');
+        return { success: true, message: 'System updated from file successfully.' };
+    } catch (error) {
+        console.error('Update System From File Error:', error);
+        return { success: false, message: `Update failed: ${(error as Error).message}` };
     }
 }

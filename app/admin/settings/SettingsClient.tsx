@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { updateLogo, toggleMaintenance, getMaintenanceStatus, clearSystemCache, checkPgDumpAvailability, getCalendarSystem, setCalendarSystem as updateCalendarSystem } from '@/app/lib/settings-actions';
-import { Loader2, Upload, Database, Image as ImageIcon, Save, Download, AlertTriangle, Power, RefreshCw, Trash2, FileJson, AlertCircle, FileText } from 'lucide-react';
+import { updateLogo, toggleMaintenance, getMaintenanceStatus, clearSystemCache, checkPgDumpAvailability, getCalendarSystem, setCalendarSystem as updateCalendarSystem, performSystemUpdate, updateSystemFromFile } from '@/app/lib/settings-actions';
+import { Loader2, Upload, Database, Image as ImageIcon, Save, Download, AlertTriangle, Power, RefreshCw, Trash2, FileJson, AlertCircle, FileText, GitBranch, ArrowUpCircle } from 'lucide-react';
 import { getAuditLogs } from '@/app/lib/log-actions';
 
 function ActivityLogsTable() {
@@ -77,6 +77,7 @@ export default function SettingsClient() {
     const [isRestoring, setIsRestoring] = useState(false);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [calendarSystem, setCalendarSystem] = useState<string>('AD');
+    const [updateStatus, setUpdateStatus] = useState<{ loading: boolean; action: string | null; output: string | null; error: boolean }>({ loading: false, action: null, output: null, error: false });
 
     // Fetch initial maintenance status, pg_dump availability, and calendar system
     useEffect(() => {
@@ -467,6 +468,77 @@ export default function SettingsClient() {
                                         <Trash2 size={18} /> Clear System Cache
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+
+                        <hr className="border-gray-100" />
+
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                <ArrowUpCircle size={20} className="text-indigo-600" />
+                                System Updates
+                            </h3>
+
+                            <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-xl">
+                                <h4 className="font-bold text-indigo-900 mb-2">Update Application</h4>
+                                <p className="text-sm text-indigo-700 mb-6">
+                                    Pull the latest changes from the repository and update the database schema.
+                                </p>
+
+                                <div className="flex flex-wrap gap-4 mb-4">
+
+
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm('Are you sure you want to update the database schema? Make sure to backup first.')) return;
+                                            setUpdateStatus({ loading: true, action: 'db', output: null, error: false });
+                                            const res = await performSystemUpdate('prisma-migrate');
+                                            setUpdateStatus({ loading: false, action: 'db', output: res.output || res.message, error: !res.success });
+                                            if (res.success) setMessage('Database schema updated successfully');
+                                            else setMessage(res.message);
+                                        }}
+                                        disabled={updateStatus.loading}
+                                        className="bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {updateStatus.loading && updateStatus.action === 'db' ? <Loader2 className="animate-spin" size={18} /> : <Database size={18} />}
+                                        Update Database Schema
+                                    </button>
+                                </div>
+
+                                {updateStatus.output && (
+                                    <div className={`mt-4 p-4 rounded-lg text-xs font-mono whitespace-pre-wrap overflow-x-auto max-h-60 ${updateStatus.error ? 'bg-red-100 text-red-800' : 'bg-gray-900 text-green-400'}`}>
+                                        {updateStatus.output}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-xl mt-4">
+                                <h4 className="font-bold text-indigo-900 mb-2">Update from File (Zip)</h4>
+                                <p className="text-sm text-indigo-700 mb-4">
+                                    Upload a .zip file containing the specific files you want to update. System will overwrite existing files.
+                                </p>
+                                <form action={async (formData) => {
+                                    if (!confirm('Are you sure you want to update from this zip file? This will overwrite server files.')) return;
+                                    setMessage('Uploading and extracting...');
+                                    const res = await updateSystemFromFile(formData);
+                                    setMessage(res.message);
+                                }} className="flex gap-4 items-end">
+                                    <div className="flex-1">
+                                        <input
+                                            type="file"
+                                            name="updateZip"
+                                            accept=".zip"
+                                            required
+                                            className="w-full border border-indigo-200 rounded-lg p-2 bg-white text-sm"
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg transition-colors flex items-center gap-2"
+                                    >
+                                        <Upload size={18} /> Upload & Update
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
