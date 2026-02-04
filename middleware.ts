@@ -25,7 +25,16 @@ export default auth((req) => {
 
     if (isLoggedIn) {
         if (nextUrl.pathname === '/login') {
-            const redirectUrl = user.role === 'COLLECTOR' ? '/collector' : '/admin';
+            const permissions = (user as any).permissions || [];
+            let redirectUrl = '/user'; // Default for USER
+
+            if (user.role === 'ADMIN') {
+                redirectUrl = '/admin';
+            } else if (user.role === 'COLLECTOR' || permissions.includes('mobile_attendance')) {
+                redirectUrl = '/collector';
+            }
+            // Else remains /user
+
             return NextResponse.redirect(new URL(redirectUrl, nextUrl));
         }
 
@@ -36,20 +45,15 @@ export default auth((req) => {
 
         // Prevent stuck loop: If password change NOT required but on change-password page, redirect out
         if (!user?.mustChangePassword && isChangePasswordRoute) {
-            const redirectUrl = user.role === 'COLLECTOR' ? '/collector' : '/admin';
+            const redirectUrl = user.role === 'COLLECTOR' ? '/collector' : user.role === 'USER' ? '/user' : '/admin';
             return NextResponse.redirect(new URL(redirectUrl, nextUrl));
         }
     }
 
-    // Default Authorized Check from auth.config handled by NextAuth wrapper implicitly, 
-    // but we can add explicit redirect for unauthenticated specific access if needed.
-    // However, authConfig.authorized callback usually handles access control.
-
+    // Default Authorized Check from auth.config handled by NextAuth wrapper implicitly
     return NextResponse.next();
 });
 
 export const config = {
-    // Matcher excluding static files and api/auth
-    // Combined matcher from both files (they were similar but proxy.ts had 'images' excluded too)
     matcher: ['/((?!api|_next/static|_next/image|images|favicon.ico).*)'],
 };

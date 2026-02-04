@@ -9,7 +9,14 @@ export const metadata = {
     title: "Audit Logs | Sukra Admin",
 };
 
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function LogsPage(props: { searchParams?: Promise<{ action?: string, startDate?: string, endDate?: string, page?: string }> }) {
+    // Permission Check
+    const { authorized } = await checkPermission('logs:read');
+    if (!authorized) return <AccessDenied />;
+
     const searchParams = await props.searchParams;
     const filters = {
         action: searchParams?.action,
@@ -77,7 +84,7 @@ export default async function LogsPage(props: { searchParams?: Promise<{ action?
                 </table>
             </div>
 
-            <Pagination metadata={metadata} />
+            <Pagination totalPages={metadata.totalPages} totalCount={metadata.total} />
         </div>
     );
 }

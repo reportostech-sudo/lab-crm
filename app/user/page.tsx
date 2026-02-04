@@ -19,6 +19,21 @@ export default async function UserDashboard() {
     const bookings = await getUserBookings();
     const activeBookings = bookings.filter((b: any) => ['PENDING', 'ASSIGNED', 'COLLECTED', 'RECEIVED_AT_LAB', 'PROCESSING'].includes(b.status));
 
+    // Redirect Staff (Users with permissions) to the Admin Dashboard
+    // Currently, typical Patients have role 'USER' and empty permissions.
+    // Staff might have role 'USER' but with permissions, or 'ADMIN'.
+    // If they have any permissions, we assume they should use the Admin Interface.
+    const userPermissions = (session.user as any).permissions || [];
+
+    // Redirect Mobile Attendance users to Collector Dashboard (simplified view for field/mobile staff)
+    if (userPermissions.includes('mobile_attendance')) {
+        redirect('/collector');
+    }
+
+    if ((session.user as any).role === 'ADMIN' || userPermissions.length > 0) {
+        redirect('/admin');
+    }
+
     return (
         <div className="container mx-auto max-w-lg p-4 pb-24 space-y-6">
             <div className="pt-4 pb-2 sticky top-0 bg-white/95 backdrop-blur z-20 border-b border-gray-50">
@@ -36,6 +51,17 @@ export default async function UserDashboard() {
                     <History size={28} className="text-gray-400" />
                     <span className="font-bold text-sm">View History</span>
                 </Link>
+
+                {/* Manual Link for Mobile Attendance (Backup) */}
+                <Link href="/collector" className="col-span-2 bg-indigo-600 text-white p-4 rounded-xl shadow-md shadow-indigo-200 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                    <User size={24} />
+                    <span className="font-bold">Staff Check-In Portal</span>
+                </Link>
+
+                {/* Debug Info (Temporary) */}
+                <div className="col-span-2 text-xs text-gray-400 text-center">
+                    Roles: {(session.user as any).role} | Perms: {JSON.stringify((session.user as any).permissions)}
+                </div>
             </div>
 
             {/* Active Appointments */}

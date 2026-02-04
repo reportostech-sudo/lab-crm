@@ -17,6 +17,7 @@ async function getUser(email: string) {
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
+    session: { strategy: 'jwt' },
     providers: [
         Credentials({
             async authorize(credentials) {
@@ -33,6 +34,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     // Check if blocked
                     if (user.isBlocked) {
                         throw new Error("Account is blocked due to too many failed attempts.");
+                    }
+
+                    // Check for USER role permissions
+                    // If role is USER and permissions array is empty, block login
+                    if (user.role === 'USER' && (!user.permissions || user.permissions.length === 0)) {
+                        throw new Error("Account pending approval. Please contact admin.");
                     }
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);

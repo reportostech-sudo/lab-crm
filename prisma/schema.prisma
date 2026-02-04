@@ -17,12 +17,14 @@ model User {
   password  String
   role      String   @default("USER") // ADMIN, USER, COLLECTOR
   permissions String[] @default([]) // List of allowed modules e.g. ["bookings", "doctors"]
+  isEmployee Boolean @default(false)
   mustChangePassword Boolean @default(false)
   image     String?
   groupId   String?
   group     Group?   @relation(fields: [groupId], references: [id])
   bookings  Booking[] @relation("AssignedBookings")
   createdBookings Booking[] @relation("CreatedBookings")
+  patientBookings Booking[] @relation("PatientBookings")
   bookingRequests BookingRequest[]
   auditLogs AuditLog[]
   createdAt DateTime @default(now())
@@ -37,6 +39,20 @@ model User {
   lastLng           Float?
   lastLocationUpdate DateTime?
   attendance        Attendance[]
+  shiftId           String?
+  shift             Shift?   @relation(fields: [shiftId], references: [id])
+}
+
+model Shift {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  type            String   // "FIXED" or "FLEXIBLE"
+  startTime       String?  // e.g., "09:00"
+  endTime         String?  // e.g., "17:00"
+  durationMinutes Int?     // e.g., 480 for 8 hours
+  users           User[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Group {
@@ -59,6 +75,9 @@ model Booking {
   
   assignedToId String?
   assignedTo   User?    @relation("AssignedBookings", fields: [assignedToId], references: [id])
+  
+  userId      String?
+  user        User?     @relation("PatientBookings", fields: [userId], references: [id])
   
   address     String?
   remarks     String?

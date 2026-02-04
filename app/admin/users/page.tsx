@@ -1,21 +1,34 @@
 import { fetchUsers, fetchGroups } from "@/app/lib/user-actions";
+import { auth } from "@/auth";
+import { prisma } from "@/app/lib/prisma";
 import AddUserModal from "@/components/admin/AddUserModal";
 import EditUserModal from "@/components/admin/EditUserModal";
 import UnblockUserButton from "@/components/admin/UnblockUserButton"; // New Import
 import { ShieldAlert } from "lucide-react";
+import { getShifts } from "@/app/lib/shift-actions";
 
 export const metadata = {
     title: "User Management | Sukra Admin",
 };
 
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function UsersPage() {
+    // Permission Check
+    const { authorized, user: currentUser } = await checkPermission('users:read');
+    if (!authorized) return <AccessDenied />;
+
     const users = await fetchUsers();
     const groups = await fetchGroups();
+
+    // Redundant manual auth fetch removed since checkPermission returns the user
+
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <AddUserModal groups={groups} />
+                <AddUserModal groups={groups} currentUser={currentUser} />
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -61,8 +74,8 @@ export default async function UsersPage() {
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                    <UnblockUserButton userId={user.id} isBlocked={user.isBlocked} />
-                                    <EditUserModal user={user} groups={groups} />
+                                    <UnblockUserButton userId={user.id} isBlocked={user.isBlocked} currentUser={currentUser} />
+                                    <EditUserModal user={user} groups={groups} currentUser={currentUser} />
                                 </td>
                             </tr>
                         ))}

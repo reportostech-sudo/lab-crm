@@ -130,3 +130,36 @@ export async function checkPgDumpAvailability() {
         return false;
     }
 }
+// ... existing code ...
+
+export async function getCalendarSystem() {
+    try {
+        const setting = await prisma.systemSetting.findUnique({
+            where: { key: 'calendar_system' }
+        });
+        return setting?.value || "AD";
+    } catch (error) {
+        return "AD";
+    }
+}
+
+export async function setCalendarSystem(system: "AD" | "BS") {
+    try {
+        await prisma.systemSetting.upsert({
+            where: { key: 'calendar_system' },
+            create: {
+                key: 'calendar_system',
+                value: system,
+                description: 'Calendar System (AD/BS)'
+            },
+            update: {
+                value: system
+            }
+        });
+
+        revalidatePath('/', 'layout');
+        return { success: true, message: `Calendar system updated to ${system}` };
+    } catch (error) {
+        return { error: "Failed to update calendar system" };
+    }
+}

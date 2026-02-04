@@ -2,7 +2,14 @@ import { getCategories, deleteCategory } from '@/app/lib/category-actions';
 import { Plus, Tag, Trash2, Edit2, Search } from 'lucide-react';
 import CategoryManagerClient from '@/components/admin/CategoryManagerClient'; // Client wrapper for interactivity
 
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function AdminCategoriesPage() {
+    // Permission Check
+    const { authorized } = await checkPermission('categories:read');
+    if (!authorized) return <AccessDenied />;
+
     const categories = await getCategories();
 
     return (

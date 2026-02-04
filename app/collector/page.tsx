@@ -18,8 +18,8 @@ export default async function CollectorDashboard() {
     const userRole = (session?.user as any)?.role;
     const userPermissions = (session?.user as any)?.permissions || [];
 
-    // Allow if role is COLLECTOR OR if user has collector read permission
-    if (!session?.user || (userRole !== 'COLLECTOR' && !userPermissions.includes('collector:read'))) {
+    // Allow if role is COLLECTOR OR if user has collector read permission OR mobile attendance permission
+    if (!session?.user || (userRole !== 'COLLECTOR' && !userPermissions.includes('collector:read') && !userPermissions.includes('mobile_attendance'))) {
         redirect('/login');
     }
 

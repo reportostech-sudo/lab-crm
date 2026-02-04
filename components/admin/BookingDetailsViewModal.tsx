@@ -145,10 +145,13 @@ export default function BookingDetailsViewModal({
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                             <Clock size={14} /> Tracking Timeline
                         </h4>
-                        <div className="relative border-l-2 border-gray-200 ml-2 space-y-8 pl-8 py-2">
+                        <div className="relative ml-2 pl-8 py-2">
                             {/* Request Time */}
-                            <div className="relative">
-                                <div className={`absolute -left-[39px] w-5 h-5 rounded-full border-4 bg-white ${booking.createdAt ? 'border-green-100' : 'border-gray-100'}`}>
+                            <div className="relative pb-10">
+                                {/* Connecting Line */}
+                                <div className="absolute -left-[30px] top-5 bottom-0 w-0.5 bg-green-500"></div>
+
+                                <div className={`absolute -left-[39px] z-10 w-5 h-5 rounded-full border-4 bg-white ${booking.createdAt ? 'border-green-100' : 'border-gray-100'}`}>
                                     <div className={`w-2.5 h-2.5 rounded-full m-[1px] ${booking.createdAt ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                                 </div>
                                 <div className="flex justify-between items-start">
@@ -164,8 +167,11 @@ export default function BookingDetailsViewModal({
 
                             {/* Assigned Time */}
                             {booking.assignedTo && (
-                                <div className="relative">
-                                    <div className="absolute -left-[39px] w-5 h-5 rounded-full border-4 border-blue-100 bg-white">
+                                <div className="relative pb-10">
+                                    {/* Connecting Line */}
+                                    <div className="absolute -left-[30px] top-5 bottom-0 w-0.5 bg-blue-500"></div>
+
+                                    <div className="absolute -left-[39px] z-10 w-5 h-5 rounded-full border-4 border-blue-100 bg-white">
                                         <div className="w-2.5 h-2.5 rounded-full m-[1px] bg-blue-500"></div>
                                     </div>
                                     <div className="flex justify-between items-start">
@@ -181,8 +187,11 @@ export default function BookingDetailsViewModal({
                             )}
 
                             {/* Collected Time */}
-                            <div className="relative">
-                                <div className={`absolute -left-[39px] w-5 h-5 rounded-full border-4 bg-white ${booking.collectedAt ? 'border-orange-100' : 'border-gray-100'}`}>
+                            <div className="relative pb-10">
+                                {/* Connecting Line */}
+                                <div className={`absolute -left-[30px] top-5 bottom-0 w-0.5 ${booking.collectedAt ? 'bg-orange-500' : 'bg-gray-200'}`}></div>
+
+                                <div className={`absolute -left-[39px] z-10 w-5 h-5 rounded-full border-4 bg-white ${booking.collectedAt ? 'border-orange-100' : 'border-gray-100'}`}>
                                     <div className={`w-2.5 h-2.5 rounded-full m-[1px] ${booking.collectedAt ? 'bg-orange-500' : 'bg-gray-300'}`}></div>
                                 </div>
                                 <div className="flex justify-between items-start">
@@ -198,7 +207,7 @@ export default function BookingDetailsViewModal({
 
                             {/* Received Time */}
                             <div className="relative">
-                                <div className={`absolute -left-[39px] w-5 h-5 rounded-full border-4 bg-white ${booking.receivedAt ? 'border-purple-100' : 'border-gray-100'}`}>
+                                <div className={`absolute -left-[39px] z-10 w-5 h-5 rounded-full border-4 bg-white ${booking.receivedAt ? 'border-purple-100' : 'border-gray-100'}`}>
                                     <div className={`w-2.5 h-2.5 rounded-full m-[1px] ${booking.receivedAt ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
                                 </div>
                                 <div className="flex justify-between items-start">

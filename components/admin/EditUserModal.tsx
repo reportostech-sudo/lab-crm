@@ -20,10 +20,16 @@ function SubmitButton() {
     );
 }
 
-export default function EditUserModal({ user, groups }: { user: any; groups: any[] }) {
+import { hasPermission } from '@/app/lib/permissions';
+
+export default function EditUserModal({ user, groups, currentUser }: { user: any; groups: any[]; currentUser: any }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>(user.permissions || []);
     const [state, dispatch] = useActionState(updateUser, null as any);
+
+    const canEditUser = currentUser.role === 'ADMIN' || hasPermission(currentUser.permissions, 'users:write');
+
+    if (!canEditUser) return null;
 
     return (
         <>
@@ -133,6 +139,38 @@ export default function EditUserModal({ user, groups }: { user: any; groups: any
                                                 ))}
                                             </select>
                                         </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 pt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="isEmployee"
+                                            name="isEmployee"
+                                            defaultChecked={user.isEmployee}
+                                            className="w-4 h-4 text-medical-teal-600 rounded border-gray-300 focus:ring-medical-teal-500"
+                                        />
+                                        <label htmlFor="isEmployee" className="text-sm font-medium text-gray-700">
+                                            Is Employee? (Staff Member)
+                                        </label>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="mobileAttendance"
+                                            checked={selectedPermissions.includes('mobile_attendance')}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedPermissions([...selectedPermissions, 'mobile_attendance']);
+                                                } else {
+                                                    setSelectedPermissions(selectedPermissions.filter(p => p !== 'mobile_attendance'));
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-medical-teal-600 rounded border-gray-300 focus:ring-medical-teal-500"
+                                        />
+                                        <label htmlFor="mobileAttendance" className="text-sm font-medium text-gray-700">
+                                            Allow Mobile Check-in
+                                        </label>
                                     </div>
 
                                     <PermissionSelector selectedPermissions={selectedPermissions} onChange={setSelectedPermissions} />

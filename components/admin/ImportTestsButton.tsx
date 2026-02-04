@@ -4,11 +4,15 @@ import { useState } from 'react';
 import { useActionState } from 'react';
 import { importTestsFromExcel } from '@/app/lib/import-actions';
 import { Upload, FileSpreadsheet, Download, Loader2, Info } from 'lucide-react';
+import { usePermission } from '@/app/hooks/usePermission';
 
 export default function ImportTestsButton() {
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
+
+    const canWrite = usePermission('tests:write');
+    if (!canWrite) return null;
 
     const handleDownloadSample = () => {
         const headers = ['Name', 'Price', 'Category', 'Description', 'TAT'];

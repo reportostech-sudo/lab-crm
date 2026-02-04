@@ -14,7 +14,17 @@ interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+import { auth } from "@/auth";
+import { prisma } from "@/app/lib/prisma";
+
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function BookingsPage({ searchParams }: PageProps) {
+    // Permission Check
+    const { authorized, user: currentUser } = await checkPermission('bookings:read');
+    if (!authorized || !currentUser) return <AccessDenied />;
+
     const resolvedSearchParams = await searchParams;
     const page = Number(resolvedSearchParams?.page) || 1;
     const limit = Number(resolvedSearchParams?.limit) || 10;
@@ -24,6 +34,7 @@ export default async function BookingsPage({ searchParams }: PageProps) {
 
     const { bookings, metadata: paginationMetadata } = await getPaginatedBookings(page, limit, search, status, type);
     const collectors = await fetchCollectors();
+
 
     return (
         <div className="space-y-6">
@@ -55,6 +66,7 @@ export default async function BookingsPage({ searchParams }: PageProps) {
                                     key={booking.id}
                                     booking={booking}
                                     collectors={collectors}
+                                    currentUser={currentUser}
                                 />
                             ))}
                             {bookings.length === 0 && (

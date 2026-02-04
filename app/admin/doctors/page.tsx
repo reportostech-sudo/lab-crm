@@ -6,7 +6,14 @@ import Image from 'next/image';
 
 import DoctorSearch from '@/components/admin/DoctorSearch';
 
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function AdminDoctorsPage(props: { searchParams: Promise<{ query?: string }> }) {
+    // Permission Check
+    const { authorized } = await checkPermission('doctors:read');
+    if (!authorized) return <AccessDenied />;
+
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const doctors = await getDoctors(query);

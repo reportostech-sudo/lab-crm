@@ -3,9 +3,13 @@
 import { useState } from 'react';
 import TestFormModal from './TestFormModal';
 import { Plus, Pencil } from 'lucide-react';
+import { usePermission } from '@/app/hooks/usePermission';
 
 export default function TestFormToggle({ test }: { test?: any }) {
     const [isOpen, setIsOpen] = useState(false);
+    const canWrite = usePermission('tests:write');
+
+    if (!canWrite) return null;
 
     if (test) {
         return (

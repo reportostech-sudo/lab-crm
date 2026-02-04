@@ -8,7 +8,14 @@ import CategoryFilter from '@/components/admin/CategoryFilter';
 import ExportTestsButton from '@/components/admin/ExportTestsButton';
 import SortableHeading from '@/components/admin/SortableHeading';
 
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function AdminTestsPage(props: { searchParams: Promise<{ query?: string, page?: string, limit?: string, category?: string, sort?: string, order?: string }> }) {
+    // Permission Check
+    const { authorized } = await checkPermission('tests:read');
+    if (!authorized) return <AccessDenied />;
+
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const category = searchParams?.category;

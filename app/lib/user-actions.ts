@@ -13,6 +13,7 @@ const UserSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     role: z.enum(['USER', 'ADMIN', 'COLLECTOR']),
+    isEmployee: z.string().optional(), // Checkbox sends "on" or undefined, usually handled manually
     groupId: z.string().optional(),
     permissions: z.array(z.string()).optional(),
 });
@@ -29,6 +30,7 @@ export async function createUser(prevState: any, formData: FormData) {
             email: formData.get('email'),
             password: formData.get('password'),
             role: formData.get('role'),
+            isEmployee: formData.get('isEmployee'),
             groupId: formData.get('groupId') || undefined,
             permissions: formData.getAll('permissions') as string[],
         });
@@ -40,7 +42,7 @@ export async function createUser(prevState: any, formData: FormData) {
             };
         }
 
-        const { name, email, password, role, groupId, permissions } = validatedFields.data;
+        const { name, email, password, role, isEmployee, groupId, permissions } = validatedFields.data;
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
@@ -49,13 +51,27 @@ export async function createUser(prevState: any, formData: FormData) {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        let finalGroupId = groupId || null;
+
+        // Auto-assign to "General Staff" group if Employee and no group selected
+        if (isEmployee === 'on' && !finalGroupId) {
+            const defaultGroupName = "General Staff";
+            let defaultGroup = await prisma.group.findUnique({ where: { name: defaultGroupName } });
+
+            if (!defaultGroup) {
+                defaultGroup = await prisma.group.create({ data: { name: defaultGroupName } });
+            }
+            finalGroupId = defaultGroup.id;
+        }
+
         await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
                 role,
-                groupId: groupId || null,
+                isEmployee: isEmployee === 'on',
+                groupId: finalGroupId,
                 permissions: permissions || [],
             },
         });
@@ -77,7 +93,10 @@ export async function fetchUsers() {
 
         const users = await prisma.user.findMany({
             orderBy: { createdAt: 'desc' },
-            include: { group: true },
+            include: {
+                group: true,
+                shift: true
+            },
             // select: {
             //     id: true,
             //     name: true,
@@ -98,6 +117,7 @@ export async function fetchGroups() {
     try {
         const groups = await prisma.group.findMany({
             orderBy: { name: 'asc' },
+            include: { users: true }
         });
         return groups;
     } catch (error) {
@@ -149,6 +169,7 @@ export async function updateUser(prevState: any, formData: FormData) {
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
         const role = formData.get('role') as string;
+        const isEmployee = formData.get('isEmployee') as string;
         const groupId = formData.get('groupId') as string;
         const password = formData.get('password') as string;
         const permissions = formData.getAll('permissions') as string[];
@@ -169,11 +190,25 @@ export async function updateUser(prevState: any, formData: FormData) {
             return { message: 'Email already in use by another user.' };
         }
 
+        let finalGroupId = groupId || null;
+
+        // Auto-assign to "General Staff" group if Employee and no group selected
+        if (isEmployee === 'on' && !finalGroupId) {
+            const defaultGroupName = "General Staff";
+            let defaultGroup = await prisma.group.findFirst({ where: { name: defaultGroupName } });
+
+            if (!defaultGroup) {
+                defaultGroup = await prisma.group.create({ data: { name: defaultGroupName } });
+            }
+            finalGroupId = defaultGroup.id;
+        }
+
         const updateData: any = {
             name,
             email,
             role,
-            groupId: groupId || null,
+            isEmployee: isEmployee === 'on',
+            groupId: finalGroupId,
             permissions: permissions || [],
         };
 
@@ -191,8 +226,8 @@ export async function updateUser(prevState: any, formData: FormData) {
         revalidatePath('/admin/users');
         return { message: 'Success! User updated.' };
     } catch (error) {
-        console.error('Failed to update user:', error);
-        return { message: 'Database Error: Failed to update user.' };
+        console.error('Failed to update user - FULL ERROR:', error);
+        return { message: `Database Error: ${(error as any).message}` };
     }
 }
 
@@ -252,5 +287,86 @@ export async function unlockUser(userId: string) {
     } catch (error) {
         console.error('Failed to unlock user:', error);
         return { success: false, message: 'Failed to unlock user.' };
+    }
+}
+
+export async function createGroup(formData: FormData) {
+    try {
+        const session = await auth();
+        if (!session?.user || (session.user as any).role !== 'ADMIN') {
+            return { success: false, message: 'Unauthorized' };
+        }
+
+        const name = formData.get('name') as string;
+        if (!name) return { success: false, message: 'Dept name is required' };
+
+        await prisma.group.create({ data: { name } });
+        revalidatePath('/admin/attendance/departments');
+        return { success: true, message: 'Department created' };
+    } catch (error) {
+        return { success: false, message: 'Failed to create department' };
+    }
+}
+
+export async function deleteGroup(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user || (session.user as any).role !== 'ADMIN') {
+            return { success: false, message: 'Unauthorized' };
+        }
+
+        await prisma.group.delete({ where: { id } });
+        revalidatePath('/admin/attendance/departments');
+        return { success: true, message: 'Department deleted' };
+    } catch (error) {
+        return { success: false, message: 'Failed to delete department' };
+    }
+}
+
+export async function assignUserToGroup(userId: string, groupId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user || (session.user as any).role !== 'ADMIN') {
+            return { success: false, message: 'Unauthorized' };
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { groupId }
+        });
+        revalidatePath('/admin/attendance/departments');
+        return { success: true, message: 'User added to department' };
+    } catch (error) {
+        return { success: false, message: 'Failed to add user' };
+    }
+}
+
+export async function removeUserFromGroup(userId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user || (session.user as any).role !== 'ADMIN') {
+            return { success: false, message: 'Unauthorized' };
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { groupId: null }
+        });
+        revalidatePath('/admin/attendance/departments');
+        return { success: true, message: 'User removed from department' };
+    } catch (error) {
+        return { success: false, message: 'Failed to remove user' };
+    }
+}
+
+export async function getGroupUsers(groupId: string) {
+    try {
+        const users = await prisma.user.findMany({
+            where: { groupId },
+            select: { id: true, name: true, email: true, role: true }
+        });
+        return users;
+    } catch (error) {
+        return [];
     }
 }

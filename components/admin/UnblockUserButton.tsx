@@ -5,10 +5,14 @@ import { Lock, Unlock, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export default function UnblockUserButton({ userId, isBlocked }: { userId: string, isBlocked: boolean }) {
+import { hasPermission } from '@/app/lib/permissions';
+
+export default function UnblockUserButton({ userId, isBlocked, currentUser }: { userId: string, isBlocked: boolean, currentUser: any }) {
     const [loading, setLoading] = useState(false);
 
-    if (!isBlocked) return null;
+    const canUnblock = currentUser.role === 'ADMIN' || hasPermission(currentUser.permissions, 'users:write');
+
+    if (!isBlocked || !canUnblock) return null;
 
     const handleUnlock = async () => {
         if (!confirm("Are you sure you want to unlock this user?")) return;

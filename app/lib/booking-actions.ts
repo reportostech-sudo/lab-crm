@@ -104,6 +104,7 @@ export async function createBooking(prevState: any, formData: FormData) {
                 remarks,
                 source: session?.user && validatedFields.data.source === 'PORTAL' ? 'PORTAL' : 'WEBSITE',
                 createdBy: connectUser,
+                user: connectUser, // Link to patient user account if exists
             },
         });
 
@@ -645,9 +646,8 @@ export async function getUserBookings() {
         const bookings = await prisma.booking.findMany({
             where: {
                 OR: [
-                    { email: session.user.email }, // Matched by email
-                    // { userId: session.user.id } // If we had a direct link, but 'createdBy' is for admins/staff.
-                    // For now relying on email match is safest for patients.
+                    { userId: session.user.id }, // Best match: Directly linked by ID
+                    { email: session.user.email }, // Fallback: Match by email
                 ]
             },
             include: {

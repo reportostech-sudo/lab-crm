@@ -20,10 +20,15 @@ function SubmitButton() {
     );
 }
 
-export default function AddUserModal({ groups }: { groups: any[] }) {
+import { hasPermission } from '@/app/lib/permissions';
+
+export default function AddUserModal({ groups, currentUser }: { groups: any[], currentUser: any }) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
     const [state, dispatch] = useActionState(createUser, null);
+
+    // Direct permission check using fresh server data
+    const canCreateUser = currentUser.role === 'ADMIN' || hasPermission(currentUser.permissions, 'users:write');
 
     // Close modal on success (optional: you could just show a success message)
     if (state?.message === 'Success! User created.' && isOpen) {
@@ -31,6 +36,8 @@ export default function AddUserModal({ groups }: { groups: any[] }) {
         // for now we just show a success state inside the modal or close it.
         // Let's close it after a brief delay or show success UI.
     }
+
+    if (!canCreateUser) return null;
 
     return (
         <>
@@ -133,6 +140,37 @@ export default function AddUserModal({ groups }: { groups: any[] }) {
                                                 ))}
                                             </select>
                                         </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 pt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="isEmployee"
+                                            name="isEmployee"
+                                            className="w-4 h-4 text-medical-teal-600 rounded border-gray-300 focus:ring-medical-teal-500"
+                                        />
+                                        <label htmlFor="isEmployee" className="text-sm font-medium text-gray-700">
+                                            Is Employee? (Staff Member)
+                                        </label>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="mobileAttendance"
+                                            checked={selectedPermissions.includes('mobile_attendance')}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedPermissions([...selectedPermissions, 'mobile_attendance']);
+                                                } else {
+                                                    setSelectedPermissions(selectedPermissions.filter(p => p !== 'mobile_attendance'));
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-medical-teal-600 rounded border-gray-300 focus:ring-medical-teal-500"
+                                        />
+                                        <label htmlFor="mobileAttendance" className="text-sm font-medium text-gray-700">
+                                            Allow Mobile Check-in
+                                        </label>
                                     </div>
 
                                     <PermissionSelector selectedPermissions={selectedPermissions} onChange={setSelectedPermissions} />

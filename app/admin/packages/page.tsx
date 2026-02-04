@@ -2,7 +2,14 @@ import { getPackages } from '@/app/lib/package-actions';
 import PackageFormToggle from '@/components/admin/PackageFormToggle';
 import { Package, Activity, Clock } from 'lucide-react';
 
+import { checkPermission } from "@/app/lib/auth-check";
+import AccessDenied from "@/components/admin/AccessDenied";
+
 export default async function AdminPackagesPage() {
+    // Permission Check
+    const { authorized } = await checkPermission('packages:read');
+    if (!authorized) return <AccessDenied />;
+
     const packages = await getPackages();
 
     return (

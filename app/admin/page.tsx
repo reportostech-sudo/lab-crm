@@ -18,7 +18,6 @@ export default async function AdminDashboard() {
     return (
         <div className="space-y-6">
 
-
             {/* Stats Grid - Now Interactive */}
             <DashboardStatsGrid stats={stats} />
 

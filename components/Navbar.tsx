@@ -216,9 +216,26 @@ export default function Navbar() {
                         <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-medical-teal-600 transition-all group-hover:w-full"></span>
                     </Link>
 
-                    <Link href="/appointment" className={`bg-medical-orange-500 text-white rounded-full font-bold hover:bg-medical-orange-600 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 ${isScrolled ? "px-5 py-2 text-xs" : "px-7 py-2.5"}`}>
-                        Book Appointment
-                    </Link>
+                    {/* Dashboard Link for Logged In Users */}
+                    {session?.user && (
+                        <Link
+                            href={
+                                role === 'ADMIN' ? '/admin' :
+                                    (role === 'COLLECTOR' || ((session.user as any).permissions || []).includes('mobile_attendance')) ? '/collector' :
+                                        '/user'
+                            }
+                            className="text-medical-teal-600 font-bold flex items-center gap-1 hover:text-medical-teal-800 transition-colors"
+                        >
+                            <User size={18} />
+                            Dashboard
+                        </Link>
+                    )}
+
+                    {!session?.user && (
+                        <Link href="/appointment" className={`bg-medical-orange-500 text-white rounded-full font-bold hover:bg-medical-orange-600 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 ${isScrolled ? "px-5 py-2 text-xs" : "px-7 py-2.5"}`}>
+                            Book Appointment
+                        </Link>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -258,8 +275,23 @@ export default function Navbar() {
                                 <>
                                     <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Collector Menu</div>
                                     <Link href="/collector" className="hover:text-medical-teal-600 py-2 border-b border-gray-50 flex items-center gap-2" onClick={() => setIsOpen(false)}><Home size={18} /> My Tasks</Link>
-                                    <Link href="/collector/history" className="hover:text-medical-teal-600 py-2 border-b border-gray-50 flex items-center gap-2" onClick={() => setIsOpen(false)}><CalendarPlus size={18} /> History</Link>
                                     <Link href="/collector/profile" className="hover:text-medical-teal-600 py-2 border-b border-gray-50 flex items-center gap-2" onClick={() => setIsOpen(false)}><User size={18} /> Profile</Link>
+                                    <div className="pt-2"></div>
+                                </>
+                            )}
+
+                            {/* USER MENU (Standard & Staff) */}
+                            {role === 'USER' && (
+                                <>
+                                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">My Menu</div>
+                                    <Link
+                                        href={((session?.user as any)?.permissions || []).includes('mobile_attendance') ? '/collector' : '/user'}
+                                        className="hover:text-medical-teal-600 py-2 border-b border-gray-50 flex items-center gap-2"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <Home size={18} /> Dashboard
+                                    </Link>
+                                    <Link href="/user/history" className="hover:text-medical-teal-600 py-2 border-b border-gray-50 flex items-center gap-2" onClick={() => setIsOpen(false)}><CalendarPlus size={18} /> History</Link>
                                     <div className="pt-2"></div>
                                 </>
                             )}

@@ -5,11 +5,15 @@ import BookingDetailsViewModal from "./BookingDetailsViewModal";
 import { assignBooking, updateBookingStatus } from "@/app/lib/booking-actions";
 import { useRouter } from "next/navigation";
 
+import { usePermission } from "@/app/hooks/usePermission";
+
 export default function RecentBookingsTable({ bookings, collectors }: { bookings: any[]; collectors: any[] }) {
     const [selectedBooking, setSelectedBooking] = useState<any>(null);
     const router = useRouter();
+    const canWrite = usePermission('bookings:write');
 
     const handleAssign = async (bookingId: string, collectorId: string) => {
+        if (!canWrite) return;
         const formData = new FormData();
         formData.append("bookingId", bookingId);
         formData.append("collectorId", collectorId);
@@ -106,8 +110,8 @@ export default function RecentBookingsTable({ bookings, collectors }: { bookings
                 booking={selectedBooking}
                 collectors={collectors}
                 onClose={() => setSelectedBooking(null)}
-                onAssign={handleAssign}
-                onStatusUpdate={handleStatusUpdate}
+                onAssign={canWrite ? handleAssign : undefined}
+                onStatusUpdate={canWrite ? handleStatusUpdate : undefined}
             />
         </>
     );

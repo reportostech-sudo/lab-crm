@@ -20,33 +20,38 @@ export const authConfig = {
             if (isAdminSection) {
                 if (!isLoggedIn) return false;
 
-                // Explicitly deny COLLECTOR role from accessing admin dashboard
-                if (role === 'COLLECTOR') {
-                    return false;
+                // STRICT: ONLY ADMIN OR STAFF WITH PERMISSIONS CAN ACCESS /admin
+                if (role !== 'ADMIN') {
+                    // If User has permissions, allow access (Staff)
+                    if (role === 'USER' && permissions.length > 0) return true;
+
+                    // If logged in but not admin/staff, redirect to appropriate dashboard
+                    if (role === 'COLLECTOR') {
+                        return Response.redirect(new URL('/collector', nextUrl));
+                    }
+                    // Default for plain USER (Patient)
+                    return Response.redirect(new URL('/user', nextUrl));
                 }
 
-                if (role === 'ADMIN') return true;
-
-                // Allow specific modules based on permissions
-                if (nextUrl.pathname.startsWith('/admin/bookings') && permissions.includes('bookings')) return true;
-                if (nextUrl.pathname.startsWith('/admin/doctors') && permissions.includes('doctors')) return true;
-                if (nextUrl.pathname.startsWith('/admin/users') && permissions.includes('patients')) return true;
-                if (nextUrl.pathname.startsWith('/admin/packages') && permissions.includes('packages')) return true;
-                if (nextUrl.pathname.startsWith('/admin/tests') && permissions.includes('packages')) return true;
-
-                // Allow Dashboard if user has ANY permission (basic access)
-                if (nextUrl.pathname === '/admin' && permissions.length > 0) return true;
-
-                return false; // Default deny if not matching permissions
+                return true;
             }
 
             const isCollectorSection = nextUrl.pathname.startsWith('/collector');
             if (isCollectorSection) {
-                // Allow if role is COLLECTOR OR if user has collector read permission
-                if (isLoggedIn && (role === 'COLLECTOR' || permissions.includes('collector:read'))) return true;
+                // Allow if role is COLLECTOR OR if user has collector read permission (if admin wants to see it)
+                if (isLoggedIn && (role === 'COLLECTOR' || role === 'ADMIN' || permissions.includes('collector:read') || permissions.includes('mobile_attendance'))) return true;
                 return false;
             }
+
+            const isUserSection = nextUrl.pathname.startsWith('/user');
+            if (isUserSection) {
+                if (isLoggedIn && (role === 'USER' || role === 'ADMIN')) return true;
+                return false;
+            }
+
             return true;
+
+
         },
         jwt({ token, user, trigger, session }) {
             if (user) {

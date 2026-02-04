@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     androidScheme: 'https',
-    url: 'http://192.168.18.174:3000', // REPLACE THIS with your computer's IP (e.g. 192.168.1.5:3000) or production URL
+    url: 'https://demo.sukrahod.com',
     cleartext: true
   }
 };

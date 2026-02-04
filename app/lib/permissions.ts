@@ -38,6 +38,21 @@ export const PERMISSIONS = {
         label: "Collector Dashboard",
         read: "collector:read",
         write: "collector:write"
+    },
+    attendance: {
+        label: "Attendance",
+        read: "attendance:read",
+        write: "attendance:write"
+    },
+    categories: {
+        label: "Categories",
+        read: "categories:read",
+        write: "categories:write"
+    },
+    logs: {
+        label: "Audit Logs",
+        read: "logs:read",
+        write: "logs:write"
     }
 } as const;
 
