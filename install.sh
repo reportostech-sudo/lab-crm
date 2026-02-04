@@ -72,7 +72,7 @@ fi
 if ! grep -q "AUTH_URL" .env; then
     echo "AUTH_URL=https://$DOMAIN" >> .env
 fi
-fi
+
 
 # 5. Local App Setup
 echo -e "${YELLOW}Step 5: Installing Dependencies & Building...${NC}"
