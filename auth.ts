@@ -21,20 +21,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     providers: [
         Credentials({
             async authorize(credentials) {
-                console.log('DEBUG: Authorizing credentials for email:', credentials?.email);
                 const parsedCredentials = z
                     .object({ email: z.string().email(), password: z.string().min(6) })
                     .safeParse(credentials);
 
                 if (parsedCredentials.success) {
                     const { email, password } = parsedCredentials.data;
-                    console.log('DEBUG: Finding user in DB:', email);
                     const user = await getUser(email);
-                    if (!user) {
-                        console.log('DEBUG: User NOT found in DB');
-                        return null;
-                    }
-                    console.log('DEBUG: User found:', user.email, 'Role:', user.role, 'Hash:', user.password?.substring(0, 10) + '...');
+                    if (!user) return null;
 
                     // Check if blocked
                     if (user.isBlocked) {
@@ -47,10 +41,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         throw new Error("Account pending approval. Please contact admin.");
                     }
 
-                    console.log('DEBUG: Checking password...');
                     const passwordsMatch = await bcrypt.compare(password, user.password);
-                    console.log('DEBUG: Password match result:', passwordsMatch);
-
                     if (passwordsMatch) {
                         // Reset failed attempts on success
                         await prisma.user.update({
