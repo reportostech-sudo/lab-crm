@@ -25,7 +25,7 @@ export default auth((req) => {
 
     if (isLoggedIn) {
         if (nextUrl.pathname === '/login') {
-            const permissions = (user as any).permissions || [];
+            const permissions = (user as any)?.permissions || [];
             let redirectUrl = '/user'; // Default for USER
 
             if (user.role === 'ADMIN') {

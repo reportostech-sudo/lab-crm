@@ -63,6 +63,17 @@ if [ ! -f .env ]; then
     fi
 fi
 
+# Ensure AUTH_TRUST_HOST is set for NextAuth behind proxy
+if ! grep -q "AUTH_TRUST_HOST" .env; then
+    echo "AUTH_TRUST_HOST=true" >> .env
+fi
+
+# Ensure AUTH_URL is set (often needed for custom domains)
+if ! grep -q "AUTH_URL" .env; then
+    echo "AUTH_URL=https://$DOMAIN" >> .env
+fi
+fi
+
 # 5. Local App Setup
 echo -e "${YELLOW}Step 5: Installing Dependencies & Building...${NC}"
 npm install
