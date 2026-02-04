@@ -21,7 +21,20 @@ NODE_VERSION="20"
 # 1. Update System
 echo -e "${YELLOW}Step 1: Updating System...${NC}"
 sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y curl git build-essential nginx
+sudo apt-get install -y curl git build-essential nginx postgresql postgresql-contrib
+
+# 1.5 Setup Database (PostgreSQL)
+echo -e "${YELLOW}Step 1.5: Configuring Database...${NC}"
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Create user 'postgres' with password 'ostech' if not exists (or alter password)
+echo -e "${YELLOW}Creating DB User...${NC}"
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'ostech';" || true
+
+# Create database 'lab' if not exists
+echo -e "${YELLOW}Creating Database...${NC}"
+sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'lab'" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE lab;"
 
 # 2. Install Node.js
 if ! command -v node &> /dev/null; then
