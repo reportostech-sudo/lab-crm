@@ -25,7 +25,7 @@ export default function PackageFormModal({ pkg, onClose }: PackageFormModalProps
 
     useEffect(() => {
         // Fetch available tests on mount
-        getTests().then(tests => setAvailableTests(tests));
+        getTests().then(data => setAvailableTests(data.tests));
     }, []);
 
     const toggleTest = (testId: string) => {
